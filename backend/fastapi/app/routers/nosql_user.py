@@ -9,6 +9,7 @@ import crud.nosql as nosql_crud
 import os
 import httpx
 import logging
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/users",
