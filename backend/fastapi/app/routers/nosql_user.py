@@ -47,7 +47,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     async with httpx.AsyncClient(timeout=5) as client:
         try:
             resp = await client.post(
-                "http://3.35.167.118:30082/deploy",
+                "https://3.35.167.118:30082/deploy",
                 json={"user_id": str(user["_id"]), "env": env_list},
             )
             resp.raise_for_status()
