@@ -6,6 +6,9 @@ from models.mcp_nosql import UserCreate, User, Token
 from routers.nosql_auth import get_current_user, get_admin_user
 from core.security import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
 import crud.nosql as nosql_crud
+import os
+import httpx
+import logging
 
 router = APIRouter(
     prefix="/users",
@@ -30,6 +33,29 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
         data={"sub": user["email"]}, # username 대신 email 사용
         expires_delta=access_token_expires
     )
+
+        ##################### Agent Operator 호출 #####################
+    # 유저별 환경변수 예시 (필요 시 수정)
+    settings = await nosql_crud.get_user_settings(user["_id"])  # 없으면 빈 dict
+    env_list = [
+        {"name": "USER_ID", "value": str(user["_id"])},
+        {"name": "FEATURES", "value": ",".join(settings.get("features", []))},
+        {"name": "API_KEY", "value": settings.get("api_key", "")},
+    ]
+
+    async with httpx.AsyncClient(timeout=5) as client:
+        try:
+            resp = await client.post(
+                "http://3.35.167.118:30082/deploy",
+                json={"user_id": str(user["_id"]), "env": env_list},
+            )
+            resp.raise_for_status()
+            service_url = resp.json().get("service_url")
+            logger.info(f"Agent for {user['_id']} at {service_url}")
+            # 필요하다면 DB나 세션에 service_url 저장
+        except Exception as e:
+            logger.warning(f"Agent deploy failed for {user['_id']}: {e}")
+    ##################### Agent Operator 호출 #####################
     
     return {"access_token": access_token, "token_type": "bearer"}
 
