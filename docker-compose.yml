@@ -1,0 +1,34 @@
+services:
+  # agent:
+  #   build:
+  #     context: ./agent
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "8001:8001"
+  #   environment:
+  #     - OPENAI_API_KEY=${OPENAI_API_KEY}
+  #     - GITHUB_PERSONAL_ACCESS_TOKEN=${GITHUB_PERSONAL_ACCESS_TOKEN}
+  #     - NOTION_API_TOKEN=${NOTION_API_TOKEN}
+  #     - NOTION_PAGE_ID=${NOTION_PAGE_ID}
+  #     - GITLAB_PERSONAL_ACCESS_TOKEN=${GITLAB_PERSONAL_ACCESS_TOKEN}
+  #     - GITLAB_API_URL=${GITLAB_API_URL}
+
+  fastapi:
+    build:
+      context: ./backend/fastapi
+      dockerfile: Dockerfile
+    container_name: fastapi
+    ports:
+      - "8000:8000"
+    environment:
+      # MongoDB 연결 정보
+      - MONGODB_URL=${MONGODB_URL}
+      - MONGO_DB_PASSWORD=${MONGO_DB_PASSWORD}
+
+      # JWT 설정
+      - SECRET_KEY=${SECRET_KEY}
+      - ALGORITHM=${ALGORITHM}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES}
+
+      # CORS 설정
+      - CORS_ORIGINS=${CORS_ORIGINS}
