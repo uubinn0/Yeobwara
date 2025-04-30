@@ -11,9 +11,9 @@ load_dotenv()
 class Settings(BaseSettings):
     # MongoDB 설정
     MONGODB_URL: str = os.getenv("MONGODB_URL")
-    DATABASE_NAME: str = os.getenv("DATABASE_NAME", "S12P31B107")
-    MONGO_DB_USER_NAME: str = os.getenv("MONGO_DB_USER_NAME", "S12P31B107")
-    MONGO_DB_PASSWORD: str = os.getenv("MONGO_DB_PASSWORD", "")
+    DATABASE_NAME: str = os.getenv("DATABASE_NAME")
+    MONGO_DB_USER_NAME: str = os.getenv("MONGO_DB_USER_NAME")
+    MONGO_DB_PASSWORD: str = os.getenv("MONGO_DB_PASSWORD")
     
     # JWT 설정
     SECRET_KEY: str = os.getenv("SECRET_KEY")
