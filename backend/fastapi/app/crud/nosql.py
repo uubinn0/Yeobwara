@@ -291,3 +291,22 @@ async def delete_env_var(user_id: str, mcp_id: str):
         return result.modified_count > 0
     except:
         return False
+
+
+#####################################################
+# 정찬호 추가 crud
+# crud/nosql.py ― 파일 맨 아래 “환경 변수 관련” 주석 위 or 원하는 위치
+# ================================================================
+
+async def get_user_settings(user_id: str) -> dict:
+    """
+    사용자가 저장해 둔 세팅(features, api_key 등)을 반환합니다.
+    값이 없으면 빈 dict.
+    """
+    try:
+        user = await get_user_by_id(user_id)
+        # env_settings, selected_mcps 등 다른 키를 합치고 싶으면 여기서 병합
+        return user.get("env_settings", {}) if user else {}
+    except Exception as e:
+        print(f"유저 세팅 조회 중 오류: {e}")
+        return {}
