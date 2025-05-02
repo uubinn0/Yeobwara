@@ -181,7 +181,6 @@ async def create_mcp(mcp: MCPCreate):
         "name": mcp.name,
         "description": mcp.description,
         "mcp_type": mcp.mcp_type,
-        "manual": mcp.manual,
         "required_env_vars": mcp.required_env_vars,
         "created_at": datetime.utcnow(),
         "updated_at": datetime.utcnow()

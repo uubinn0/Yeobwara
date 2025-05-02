@@ -57,7 +57,6 @@ async def read_mcp(public_id: str):
         "public_id": mcp.get("public_id", ""),
         "name": mcp["name"],
         "description": mcp.get("description", ""),
-        "manual": mcp.get("manual"),
         "script": mcp.get("script"),
         "mcp_type": mcp.get("mcp_type", ""),
         "required_env_vars": mcp.get("required_env_vars", []),

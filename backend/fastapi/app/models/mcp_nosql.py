@@ -34,24 +34,21 @@ class UserInDB(UserBase):
     # 사용자의 MCP별 환경 변수 설정 (MCP ID를 키로 사용)
     env_settings: Dict[str, Dict[str, str]] = {}
 
-# MCP 모델 (매뉴얼과 스크립트를 내장)
+# MCP 모델
 class MCPBase(BaseModel):
     name: str
     description: Optional[str] = None
     mcp_type: str  # MCP 타입 (예: "notion", "gitlab" 등)
 
 class MCPCreate(MCPBase):
-    manual: Optional[str] = None
     required_env_vars: Optional[List[str]] = None  # 필요한 환경변수 이름 목록
 
 class MCPUpdate(MCPBase):
-    manual: Optional[str] = None
     required_env_vars: Optional[List[str]] = None
 
 class MCP(MCPBase):
     id: uuid.UUID
     public_id: str  # 공개용 식별자
-    manual: Optional[str] = None
     required_env_vars: Optional[List[str]] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: Optional[datetime] = None
