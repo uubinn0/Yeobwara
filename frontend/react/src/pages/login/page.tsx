@@ -1,22 +1,28 @@
 "use client"
 
-import type React from "react"
-import { useState } from "react"
+import React, { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Link, useNavigate } from "react-router-dom"
 import { Rocket } from "lucide-react"
+import api from "../../api/api"
 
 export default function LoginPage() {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const navigate = useNavigate()
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    // 실제 구현에서는 인증 로직 추가
-    navigate("/chat")
+    try {
+      const response = await api.post('/auth/login', { username, password })
+      localStorage.setItem('accessToken', response.data.accessToken)
+      navigate("/chat")
+    } catch (error) {
+      console.error('Login failed:', error)
+      // 에러 처리 로직 추가
+    }
   }
 
   return (
