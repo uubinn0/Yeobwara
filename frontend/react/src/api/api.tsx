@@ -14,7 +14,7 @@ const api = axios.create({
 // Request interceptor
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = localStorage.getItem('accessToken');
+    const token = localStorage.getItem('access_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -31,7 +31,7 @@ api.interceptors.response.use(
   async (error) => {
     if (error.response?.status === 401) {
       // Handle token expiration or unauthorized access
-      localStorage.removeItem('accessToken');
+      localStorage.removeItem('access_token');
       window.location.href = '/login';
     }
     return Promise.reject(error);

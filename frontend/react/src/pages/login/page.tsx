@@ -27,7 +27,7 @@ export default function LoginPage() {
         }
       );
       
-      localStorage.setItem('accessToken', response.data.accessToken)
+      localStorage.setItem('access_token', response.data.access_token)
       navigate("/chat")
     } catch (error) {
       console.error('Login failed:', error)
