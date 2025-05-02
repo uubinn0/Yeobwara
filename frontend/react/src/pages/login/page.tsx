@@ -16,7 +16,17 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      const response = await api.post('/auth/login', { username, password })
+      const response = await api.post(
+        '/users/login',
+        new URLSearchParams({
+          username,
+          password,
+        }),
+        {
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        }
+      );
+      
       localStorage.setItem('accessToken', response.data.accessToken)
       navigate("/chat")
     } catch (error) {
