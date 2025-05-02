@@ -24,6 +24,8 @@ services:
       # MongoDB 연결 정보
       - MONGODB_URL=${MONGODB_URL}
       - MONGO_DB_PASSWORD=${MONGO_DB_PASSWORD}
+      - MONGO_DB_USER_NAME=${MONGO_DB_USER_NAME}
+      - DATABASE_NAME=${DATABASE_NAME}
 
       # JWT 설정
       - SECRET_KEY=${SECRET_KEY}

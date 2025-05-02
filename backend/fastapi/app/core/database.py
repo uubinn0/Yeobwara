@@ -1,14 +1,18 @@
 from pymongo import MongoClient
 from motor.motor_asyncio import AsyncIOMotorClient
 from core.config import settings
+from bson.codec_options import CodecOptions
+from bson.binary import UuidRepresentation
 
+# MongoDB UUID 표현 방식 설정
+codec_options = CodecOptions(uuid_representation=UuidRepresentation.STANDARD)
 # MongoDB 연결 설정
 MONGO_URI = settings.MONGODB_URL
 DATABASE_NAME = settings.DATABASE_NAME
 
-# 동기식 클라이언트
+# 기본 추가 설정
 client = MongoClient(MONGO_URI)
-db = client[DATABASE_NAME]
+db = client[DATABASE_NAME].with_options(codec_options)
 
 # 비동기식 클라이언트
 async_client = AsyncIOMotorClient(MONGO_URI)

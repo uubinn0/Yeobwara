@@ -1,29 +1,32 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
 from typing import Optional, List, Dict, Any
+import uuid
 
 # 사용자 모델
 class UserBase(BaseModel):
     username: str
     email: str
-    is_admin: bool = False
 
 class UserCreate(UserBase):
     password: str
 
 class User(UserBase):
-    id: Optional[str] = None
-
+    id: Optional[uuid.UUID] = None
+    is_admin: bool = False
+    selected_mcps: List[Dict[str, Any]] = []
     def model_dump(self):
         return {
-            "id": self.id, 
+            "id": str(self.id) if self.id else None, 
             "username": self.username, 
             "email": self.email, 
-            "is_admin": self.is_admin
+            "is_admin": self.is_admin,
+            "selected_mcps":self.selected_mcps
         }
 
 class UserInDB(UserBase):
-    id: str
+    id: uuid.UUID
+    is_admin: bool = False
     hashed_password: str
     created_at: datetime = Field(default_factory=datetime.utcnow)
     # 사용자가 선택한 MCP 목록 (기본 정보를 포함한 객체 저장)
@@ -31,30 +34,29 @@ class UserInDB(UserBase):
     # 사용자의 MCP별 환경 변수 설정 (MCP ID를 키로 사용)
     env_settings: Dict[str, Dict[str, str]] = {}
 
-# MCP 모델 (매뉴얼과 스크립트를 내장)
+# MCP 모델
 class MCPBase(BaseModel):
     name: str
     description: Optional[str] = None
+    mcp_type: str  # MCP 타입 (예: "notion", "gitlab" 등)
 
 class MCPCreate(MCPBase):
-    manual: Optional[str] = None
-    script: Optional[Dict[str, Any]] = None
+    required_env_vars: Optional[List[str]] = None  # 필요한 환경변수 이름 목록
 
 class MCPUpdate(MCPBase):
-    manual: Optional[str] = None
-    script: Optional[Dict[str, Any]] = None
+    required_env_vars: Optional[List[str]] = None
 
 class MCP(MCPBase):
-    id: str
-    manual: Optional[str] = None
-    script: Optional[Dict[str, Any]] = None
+    id: uuid.UUID
+    public_id: str  # 공개용 식별자
+    required_env_vars: Optional[List[str]] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: Optional[datetime] = None
     
 # MCP 환경변수 업데이트를 위한 모델
 class EnvUpdate(BaseModel):
-    mcp_id: str
-    api_key: str
+    public_id: str  # public_id 사용
+    env_vars: Dict[str, str]  # 키-값 쌍으로 여러 환경변수 지원
 
 # 인증 토큰 모델
 class Token(BaseModel):

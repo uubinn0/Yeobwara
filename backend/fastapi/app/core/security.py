@@ -6,6 +6,13 @@ from fastapi.security import OAuth2PasswordBearer
 from fastapi import Depends, HTTPException, status
 from core.config import settings
 
+# bcrypt 버전 오류 해결
+import bcrypt
+import sys
+sys.modules['bcrypt.__about__'] = type('obj', (object,), {
+    '__version__': bcrypt.__version__
+})
+
 # 보안 설정
 SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = settings.ALGORITHM
