@@ -4,7 +4,8 @@ metadata:
   name: agent-operator
   namespace: agent-env
 spec:
-  type: ClusterIP
+  # type: ClusterIP
+  type: NodePort
   selector:
     app: agent-operator
   ports:
