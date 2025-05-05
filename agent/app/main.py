@@ -56,10 +56,10 @@ MCP_SERVER_CONFIG = {
         "type": "stdio",
         "params": {"command": "npx", "args": ["-y", "@suekou/mcp-notion-server"], "env": {"NOTION_API_TOKEN": os.getenv("NOTION_API_TOKEN", "")}}
     },
-    "gitlab": {
-        "type": "stdio",
-        "params": {"command": "npx", "args": ["-y", "@modelcontextprotocol/server-gitlab"], "env": {"GITLAB_PERSONAL_ACCESS_TOKEN": os.getenv("GITLAB_PERSONAL_ACCESS_TOKEN", ""), "GITLAB_API_URL": os.getenv("GITLAB_API_URL", "")}}
-    },
+    # "gitlab": {
+    #     "type": "stdio",
+    #     "params": {"command": "npx", "args": ["-y", "@modelcontextprotocol/server-gitlab"], "env": {"GITLAB_PERSONAL_ACCESS_TOKEN": os.getenv("GITLAB_PERSONAL_ACCESS_TOKEN", ""), "GITLAB_API_URL": os.getenv("GITLAB_API_URL", "")}}
+    # },
 }
 
 agent: Agent | None = None

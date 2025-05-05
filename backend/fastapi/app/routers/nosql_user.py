@@ -58,7 +58,11 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     env_list = [
         {"name": "USER_ID", "value": str(user["_id"])},
         {"name": "FEATURES", "value": ",".join(settings.get("features", []))},
-        {"name": "API_KEY", "value": settings.get("api_key", "")},
+        
+        # 사용자별로 바꿔여 할듯? DB에서 끌어오는 식으로? 
+
+        {"name": "OPENAI_API_KEY", "value": os.getenv("OPENAI_API_KEY", "")},
+        {"name": "NOTION_API_TOKEN", "value": os.getenv("NOTION_API_TOKEN", "")},
     ]
 
     async with httpx.AsyncClient(timeout=5) as client:

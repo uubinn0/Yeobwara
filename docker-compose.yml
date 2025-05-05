@@ -21,6 +21,11 @@ services:
     ports:
       - "8000:8000"
     environment:
+      # Agent Operator에서 던질 사용자별 ENV
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - NOTION_API_TOKEN=${NOTION_API_TOKEN}
+
+
       # MongoDB 연결 정보
       - MONGODB_URL=${MONGODB_URL}
       - MONGO_DB_PASSWORD=${MONGO_DB_PASSWORD}
