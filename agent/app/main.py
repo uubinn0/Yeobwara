@@ -54,7 +54,8 @@ MCP_SERVER_CONFIG = {
     # },
     "notion": {
         "type": "stdio",
-        "params": {"command": "npx", "args": ["-y", "@suekou/mcp-notion-server"], "env": {"NOTION_API_TOKEN": os.getenv("NOTION_API_TOKEN", "")}}
+        # "params": {"command": "npx", "args": ["-y", "@suekou/mcp-notion-server"], "env": {"NOTION_API_TOKEN": os.getenv("NOTION_API_TOKEN", "")}}
+        "params": {"command": "mcp-notion-server", "args": [], "env": {"NOTION_API_TOKEN": os.getenv("NOTION_API_TOKEN", "")}}
     },
     # "gitlab": {
     #     "type": "stdio",

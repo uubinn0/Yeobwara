@@ -11,9 +11,15 @@ RUN apt-get update && apt-get install -y \
   && ln -s /root/.local/bin/uv /usr/local/bin/uv \
   && rm -rf /var/lib/apt/lists/*
 
+# Dockerfile
+RUN npm install -g @suekou/mcp-notion-server
+RUN npm install -g @modelcontextprotocol/server-github
+RUN npm install -g @modelcontextprotocol/server-gitlab
+
 # Python 패키지 설치
 RUN uv pip install --system \
     fastapi uvicorn[standard] openai-agents
+
 
 # 앱 복사
 COPY app/ ./app/
@@ -21,4 +27,4 @@ COPY app/ ./app/
 EXPOSE 8001
 
 # 개발용 reload 포함 실행 명령
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8001", "--reload"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8001"]
