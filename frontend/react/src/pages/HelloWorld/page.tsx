@@ -1,6 +1,7 @@
 import React from 'react';
 
-const HelloWorld = () => {
+
+export default function HelloWorld() {
   return (
     <div style={{ 
       display: 'flex', 
@@ -13,7 +14,4 @@ const HelloWorld = () => {
       Hello World!
     </div>
   );
-};
-
-
-export default HelloWorld; 
+}; 
