@@ -33,8 +33,8 @@ async def create_pod(user_id: str) -> Dict[str, Any]:
         env_vars_list = []
         
         # 기본 환경 변수 추가 - 사용자 ID
-        env_vars_list.append({"name": "USER_ID", "value": user_id})
-        
+        env_vars_list.append({"name":"GMS_KEY","value":settings.GMS_KEY})
+        env_vars_list.append({"name":"GMS_API_BASE","value":settings.GMS_API_BASE})
         # 사용자가 선택한 MCP 서비스 목록 가져오기
         selected_mcps = await get_user_selected_mcps(user_id)
         if selected_mcps:
