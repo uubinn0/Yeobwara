@@ -103,6 +103,7 @@ async def create_pod(user_id: str) -> Dict[str, Any]:
             if pod_name:
                 # DB에 pod_name 업데이트
                 update_success = await update_pod_name(user_id, pod_name)
+                logger.info(f"pod_name: {pod_name}")
                 if not update_success:
                     logger.warning(f"pod_name 업데이트 실패 - 사용자: {user_id}, Pod: {pod_name}")
                 else:
