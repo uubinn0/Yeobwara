@@ -1,10 +1,16 @@
 import React, { useState, useEffect, useRef } from "react"
+import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
-import { useNavigate } from "react-router-dom"
-import { LogOut, Settings, Send } from "lucide-react"
+import { LogOut, Settings, Send, User, Cog } from "lucide-react"
 import type { McpService } from "@/types/mcp"
+import api from "../../api/api"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger
+} from "@/components/ui/popover"
 
 // 메시지 타입 정의
 interface Message {
@@ -27,6 +33,7 @@ export default function ChatPage() {
   ])
   const [services, setServices] = useState<McpService[]>([])
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const [settingsOpen, setSettingsOpen] = useState(false)
 
   // 로컬 스토리지에서 MCP 서비스 설정 불러오기
   useEffect(() => {
@@ -91,11 +98,18 @@ export default function ChatPage() {
   }
 
   const handleLogout = () => {
+    // 실제 구현에서는 로그아웃 로직 추가
     navigate("/login")
   }
 
-  const handleMcpSettings = () => {
-    navigate("/mcps")
+  const handleNavigateToMyPage = () => {
+    navigate("/mypage")
+    setSettingsOpen(false)
+  }
+
+  const handleNavigateToMcpSetup = () => {
+    navigate("/mcp-setup")
+    setSettingsOpen(false)
   }
 
   return (
@@ -111,14 +125,37 @@ export default function ChatPage() {
         <div className="container mx-auto flex justify-between items-center">
           <h1 className="text-xl font-bold text-white">우주 채팅</h1>
           <div className="flex space-x-2">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handleMcpSettings}
-              className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
-            >
-              <Settings className="h-5 w-5" />
-            </Button>
+            <Popover open={settingsOpen} onOpenChange={setSettingsOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
+                >
+                  <Settings className="h-5 w-5" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-56 bg-gray-900 border-gray-700 text-white p-0" align="end">
+                <div className="flex flex-col">
+                  <Button 
+                    onClick={handleNavigateToMyPage}
+                    variant="ghost"
+                    className="flex items-center justify-start gap-2 py-2 px-3 hover:bg-gray-800 rounded-none"
+                  >
+                    <User className="h-5 w-5 text-purple-400" />
+                    <span>마이페이지</span>
+                  </Button>
+                  <Button 
+                    onClick={handleNavigateToMcpSetup}
+                    variant="ghost"
+                    className="flex items-center justify-start gap-2 py-2 px-3 hover:bg-gray-800 rounded-none"
+                  >
+                    <Cog className="h-5 w-5 text-purple-400" />
+                    <span>MCP 설정</span>
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover>
             <Button
               variant="outline"
               size="icon"
@@ -162,7 +199,7 @@ export default function ChatPage() {
           <form onSubmit={handleSendMessage} className="flex space-x-2">
             <Input
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInput(e.target.value)}
               placeholder="메시지를 입력하세요..."
               className="flex-1 bg-gray-900/60 border-gray-700 text-white"
             />
