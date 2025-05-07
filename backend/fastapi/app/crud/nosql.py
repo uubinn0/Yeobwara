@@ -525,7 +525,8 @@ async def update_pod_name(user_id: str, pod_name: str) -> bool:
             {"_id": uuid_user_id},
             {"$set": {"pod_name": pod_name}}
         )
-        return result.modified_count > 0
+        # 업데이트 결과 확인 - matched_count도 확인
+        return result.modified_count > 0 or result.matched_count > 0
     except Exception as e:
         print(f"pod_name 업데이트 중 오류 발생: {e}")
         return False
