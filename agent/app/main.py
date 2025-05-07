@@ -43,16 +43,16 @@ from agents.mcp.server import MCPServerStdio
 
 app = FastAPI()
 
-# GMS_KEY = os.getenv("GMS_KEY")
-# GMS_API_BASE = os.getenv("GMS_API_BASE")
-# if not GMS_KEY or not GMS_API_BASE:
-#     raise RuntimeError("GMS_KEY 또는 GMS_API_BASE 환경 변수가 설정되지 않았습니다.")
-# openai.api_key = GMS_KEY
-# openai.api_base = GMS_API_BASE
+GMS_KEY = os.getenv("GMS_KEY")
+GMS_API_BASE = os.getenv("GMS_API_BASE")
+if not GMS_KEY or not GMS_API_BASE:
+    raise RuntimeError("GMS_KEY 또는 GMS_API_BASE 환경 변수가 설정되지 않았습니다.")
+openai.api_key = GMS_KEY
+openai.api_base = GMS_API_BASE
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-if not OPENAI_API_KEY:
-    raise RuntimeError("OPENAI_API_KEY 환경 변수가 설정되지 않았습니다.")
+# OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+# if not OPENAI_API_KEY:
+#     raise RuntimeError("OPENAI_API_KEY 환경 변수가 설정되지 않았습니다.")
 
 # MCP 서버들 설정 ( 어떤 github 을 npx 로 띄울건지 )
 MCP_SERVER_CONFIG = {
