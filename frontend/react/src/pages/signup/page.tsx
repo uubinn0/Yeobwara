@@ -17,7 +17,11 @@ export default function SignupPage() {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      await api.post('/users/signup', { username, email, password })
+      await api.post('/users/signup', { 
+        username: username, 
+        email: email, 
+        password: password 
+      })
       navigate("/login")
     } catch (error) {
       console.error('Signup failed:', error)
