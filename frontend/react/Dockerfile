@@ -17,4 +17,5 @@ COPY . .
 EXPOSE 5173
 
 # 개발 서버 실행 (Vite)
-CMD ["npm", "run", "dev"]
+CMD ["ls", "-l"]
+# CMD ["npm", "run", "dev"]
