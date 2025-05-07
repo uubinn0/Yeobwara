@@ -94,7 +94,6 @@ async def create_pod(user_id: str) -> Dict[str, Any]:
         
         # 응답에서 pod_name 추출
         try:            
-            await asyncio.sleep(5)  # 5초 대기
             response_data = json.loads(result.stdout)
             pod_name = response_data.get("pod_name")
             
