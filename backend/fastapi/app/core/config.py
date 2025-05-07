@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     ALGORITHM: str = os.getenv("ALGORITHM")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
     
+    # API 암호화
+    API_SECRET_KEY: str = os.getenv("API_SECRET_KEY")
+
     # CORS 설정
     CORS_ORIGINS: List[str] = Field(
     default_factory=lambda: json.loads(os.getenv("CORS_ORIGINS", "[]"))
