@@ -1,6 +1,8 @@
 from fastapi import FastAPI, Request, HTTPException
 from app.deploy import deploy_agent
+from app.config import NAMESPACE
 from kubernetes import config
+from kubernetes.client import CoreV1Api
 
 app = FastAPI()
 
@@ -17,7 +19,16 @@ async def deploy_user_server(request: Request):
         data = await request.json()
         user_id = data["user_id"]
         env_vars = data.get("env", [])
-        service_url = deploy_agent(user_id, env_vars)
-        return {"service_url": service_url}
+        deploy_agent(user_id, env_vars)
+
+        # 생성된 pod 이름 조회
+        core_v1 = CoreV1Api()
+        pods = core_v1.list_namespaced_pod(
+            namespace=NAMESPACE,
+            label_selector=f"app=agent-{user_id}"
+        )
+        pod_name = pods.items[0].metadata.name if pods.items else None
+        return {"pod_name": pod_name}
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

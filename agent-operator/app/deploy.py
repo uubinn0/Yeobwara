@@ -49,5 +49,5 @@ def deploy_agent(user_id: str, env_vars: list) -> str:
     )
     core_v1.create_namespaced_service(namespace=NAMESPACE, body=service)
 
-    service_url = f"http://{name}.{NAMESPACE}.svc.cluster.local"
-    return service_url
+    # service_url = f"http://{name}.{NAMESPACE}.svc.cluster.local"
+    # return service_url
