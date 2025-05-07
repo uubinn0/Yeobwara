@@ -48,59 +48,58 @@ if not OPENAI_API_KEY:
 
 # MCP 서버들 설정 ( 어떤 github 을 npx 로 띄울건지 )
 MCP_SERVER_CONFIG = {
-    # "github": {
-    #     "type": "stdio",
-    #     "params": {"command": "npx", "args": ["-y", "@modelcontextprotocol/server-github"], "env": {"GITHUB_PERSONAL_ACCESS_TOKEN": os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN", "")}}
-    # },
+    "github": {
+        "type": "stdio",
+        "params": {"command": "mcp-github-server", "args": [], "env": {"GITHUB_PERSONAL_ACCESS_TOKEN": os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN", "")}}
+        # "params": {"command": "npx", "args": ["-y", "@modelcontextprotocol/server-github"], "env": {"GITHUB_PERSONAL_ACCESS_TOKEN": os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN", "")}}
+    },
     "notion": {
         "type": "stdio",
-        # "params": {"command": "npx", "args": ["-y", "@suekou/mcp-notion-server"], "env": {"NOTION_API_TOKEN": os.getenv("NOTION_API_TOKEN", "")}}
         "params": {"command": "mcp-notion-server", "args": [], "env": {"NOTION_API_TOKEN": os.getenv("NOTION_API_TOKEN", "")}}
+        # "params": {"command": "npx", "args": ["-y", "@suekou/mcp-notion-server"], "env": {"NOTION_API_TOKEN": os.getenv("NOTION_API_TOKEN", "")}}
     },
-    # "gitlab": {
-    #     "type": "stdio",
-    #     "params": {"command": "npx", "args": ["-y", "@modelcontextprotocol/server-gitlab"], "env": {"GITLAB_PERSONAL_ACCESS_TOKEN": os.getenv("GITLAB_PERSONAL_ACCESS_TOKEN", ""), "GITLAB_API_URL": os.getenv("GITLAB_API_URL", "")}}
-    # },
+    "gitlab": {
+        "type": "stdio",
+        "params": {"command": "mcp-gitlab-server", "args": [], "env": {"GITLAB_PERSONAL_ACCESS_TOKEN": os.getenv("GITLAB_PERSONAL_ACCESS_TOKEN", ""), "GITLAB_API_URL": os.getenv("GITLAB_API_URL", "")}}
+        # "params": {"command": "npx", "args": ["-y", "@modelcontextprotocol/server-gitlab"], "env": {"GITLAB_PERSONAL_ACCESS_TOKEN": os.getenv("GITLAB_PERSONAL_ACCESS_TOKEN", ""), "GITLAB_API_URL": os.getenv("GITLAB_API_URL", "")}}
+    },
 }
 
-agent: Agent | None = None
-servers: list[MCPServerStdio] = []  # 사용자마다 servers 따로 쓸것. 여기는 입력 받아서? 
+# 환경변수 MCP_SERVICES 기반으로 사용할 서비스만 필터링
+services_env = os.getenv("MCP_SERVICES", "")
+if services_env:
+    allowed = [s.strip() for s in services_env.split(",") if s.strip()]
+    MCP_SERVER_CONFIG = {k: v for k, v in MCP_SERVER_CONFIG.items() if k in allowed}
 
+agent: Agent | None = None
+servers: list[MCPServerStdio] = []
+
+# 앱 시작 시 필요한 서버만 연결하고 Agent 초기화
 @app.on_event("startup")
 async def startup_event():
     global agent, servers
-
-    # 1) 여러 서버 인스턴스 생성 → connect()
     for name, cfg in MCP_SERVER_CONFIG.items():
-        srv = MCPServerStdio(
-            params=cfg["params"],
-            cache_tools_list=True,
-            name=name
-        )
+        srv = MCPServerStdio(params=cfg["params"], cache_tools_list=True, name=name)
         await srv.connect()
         servers.append(srv)
-
-    # 2) Agent에 mcp_servers 리스트로 전달
     agent = Agent(
         name="Assistant",
         instructions="Use the tools to achieve the task",
-        model="gpt-4.1-mini",  
+        model="gpt-4.1-mini",
         mcp_servers=servers
     )
 
+# 앱 종료 시 모든 서버 정리
 @app.on_event("shutdown")
 async def shutdown_event():
-    # 종료 시 모든 서버 cleanup()
     for srv in servers:
         await srv.cleanup()
 
+# 메시지 처리 핸들러: 단순히 global agent 사용
 @app.post("/agent-query")
 async def query_agent(payload: dict):
-    global agent
-    if agent is None:
-        raise HTTPException(503, "Agent가 초기화되지 않았습니다.")
+    if agent is None: raise HTTPException(503, "Agent가 초기화되지 않았습니다.")
     text = payload.get("text")
-    if not text:
-        raise HTTPException(400, "'text' 필드가 필요합니다.")
+    if not text: raise HTTPException(400, "'text' 필드가 필요합니다.")
     result = await Runner.run(agent, text)
     return {"response": result.final_output}
