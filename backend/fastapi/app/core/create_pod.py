@@ -1,9 +1,6 @@
-import subprocess
-import json
-import os
+import subprocess, json, os, asyncio, logging
 from typing import Dict, Any
 from crud.nosql import get_user_by_id, update_pod_name, get_env_vars, get_user_selected_mcps
-import logging
 from core.config import settings
 
 # 로깅 설정
@@ -101,6 +98,9 @@ async def create_pod(user_id: str) -> Dict[str, Any]:
             pod_name = response_data.get("pod_name")
             
             if pod_name:
+
+                await asyncio.sleep(5)  # 5초 대기
+
                 # DB에 pod_name 업데이트
                 update_success = await update_pod_name(user_id, pod_name)
                 logger.info(f"pod_name: {pod_name}")
