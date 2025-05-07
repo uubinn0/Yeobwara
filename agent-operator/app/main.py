@@ -21,10 +21,11 @@ async def deploy_user_server(request: Request):
         user_id = data["user_id"]
         env_vars = data.get("env", [])
 
-        deploy_agent(user_id, env_vars)
-
+        # 비동기 함수 호출
+        await deploy_agent(user_id, env_vars)
+        
         # 생성된 pod 이름 조회
-        core_v1 = await CoreV1Api()
+        core_v1 = CoreV1Api()
         pods = core_v1.list_namespaced_pod(
             namespace=NAMESPACE,
             label_selector=f"app=agent-{user_id}"
