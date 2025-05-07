@@ -12,6 +12,11 @@ export default defineConfig({
   },
   server: {
     host: "0.0.0.0", // ← 이 부분 필수
+    allowedHosts: [
+      'localhost',
+      '127.0.0.1',
+      'k12b107.p.ssafy.io'
+    ],
     port: 5173,       // 명시적으로 포트 고정 (선택)
   },
 });
