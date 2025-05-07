@@ -65,3 +65,12 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     username: Optional[str] = None
+
+# 채팅 메시지 스키마
+class ChatRequest(BaseModel):
+    message: str
+
+# 채팅 응답 스키마
+class ChatResponse(BaseModel):
+    response: str
+    timestamp: datetime
