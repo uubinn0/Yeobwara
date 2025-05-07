@@ -51,4 +51,3 @@ services:
       # - /app/node_modules
     environment:
       - HOST=0.0.0.0 # Vite 외부 접속 허용
-    command: npm run dev
