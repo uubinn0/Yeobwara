@@ -15,13 +15,15 @@ class User(UserBase):
     id: Optional[uuid.UUID] = None
     is_admin: bool = False
     selected_mcps: List[Dict[str, Any]] = []
+    pod_name: Optional[str] = None
     def model_dump(self):
         return {
             "id": str(self.id) if self.id else None, 
             "username": self.username, 
             "email": self.email, 
             "is_admin": self.is_admin,
-            "selected_mcps":self.selected_mcps
+            "selected_mcps": self.selected_mcps,
+            "pod_name": self.pod_name
         }
 
 class UserInDB(UserBase):
@@ -33,6 +35,8 @@ class UserInDB(UserBase):
     selected_mcps: List[Dict[str, Any]] = []
     # 사용자의 MCP별 환경 변수 설정 (MCP ID를 키로 사용)
     env_settings: Dict[str, Dict[str, str]] = {}
+    # 사용자의 Pod 이름
+    pod_name: Optional[str] = None
 
 # MCP 모델
 class MCPBase(BaseModel):

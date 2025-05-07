@@ -137,7 +137,8 @@ async def create_user(user: UserCreate):
         "hashed_password": hashed_password,
         "created_at": datetime.utcnow(),
         "selected_mcps": [],
-        "env_settings": {}
+        "env_settings": {},
+        "pod_name": None  # pod_name 초기화
     }
     
     await users.insert_one(user_dict)
@@ -513,3 +514,29 @@ async def get_user_settings(user_id: str) -> dict:
     except Exception as e:
         print(f"유저 세팅 조회 중 오류: {e}")
         return {}
+        
+async def update_pod_name(user_id: str, pod_name: str) -> bool:
+    """
+    사용자의 pod_name을 업데이트합니다.
+    """
+    try:
+        uuid_user_id = uuid.UUID(user_id)
+        result = await users.update_one(
+            {"_id": uuid_user_id},
+            {"$set": {"pod_name": pod_name}}
+        )
+        return result.modified_count > 0
+    except Exception as e:
+        print(f"pod_name 업데이트 중 오류 발생: {e}")
+        return False
+        
+async def get_pod_name(user_id: str) -> str:
+    """
+    사용자의 pod_name을 반환합니다.
+    """
+    try:
+        user = await get_user_by_id(user_id)
+        return user.get("pod_name") if user else None
+    except Exception as e:
+        print(f"pod_name 조회 중 오류 발생: {e}")
+        return None

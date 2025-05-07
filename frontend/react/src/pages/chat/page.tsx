@@ -95,7 +95,7 @@ export default function ChatPage() {
   }
 
   const handleMcpSettings = () => {
-    navigate("/mcp-setup")
+    navigate("/mcps")
   }
 
   return (
