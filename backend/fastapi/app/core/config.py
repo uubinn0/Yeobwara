@@ -25,6 +25,10 @@ class Settings(BaseSettings):
 
     # POD 생성 URL
     DEPLOY_SERVER_URL: str = os.getenv("DEPLOY_SERVER_URL")
+
+    # GMS API KEY
+    GMS_KEY: str = os.getenv("GMS_KEY")
+    GMS_API_BASE: str = os.getenv("GMS_API_BASE")
     # CORS 설정
     CORS_ORIGINS: List[str] = Field(
     default_factory=lambda: json.loads(os.getenv("CORS_ORIGINS", "[]"))
