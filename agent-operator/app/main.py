@@ -17,8 +17,10 @@ def health_check():
 async def deploy_user_server(request: Request):
     try:
         data = await request.json()
+
         user_id = data["user_id"]
         env_vars = data.get("env", [])
+
         deploy_agent(user_id, env_vars)
 
         # 생성된 pod 이름 조회

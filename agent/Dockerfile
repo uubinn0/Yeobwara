@@ -18,7 +18,7 @@ RUN npm install -g @modelcontextprotocol/server-gitlab
 
 # Python 패키지 설치
 RUN uv pip install --system \
-    fastapi uvicorn[standard] openai-agents
+    fastapi uvicorn[standard] openai-agents openai
 
 
 # 앱 복사
