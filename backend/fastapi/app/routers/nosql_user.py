@@ -52,32 +52,25 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
         expires_delta=access_token_expires
     )
 
-        ##################### Agent Operator 호출 #####################
-    # 유저별 환경변수 예시 (필요 시 수정)
-    settings = await nosql_crud.get_user_settings(user["_id"])  # 없으면 빈 dict
-    env_list = [
-        {"name": "USER_ID", "value": str(user["_id"])},
-        {"name": "FEATURES", "value": ",".join(settings.get("features", []))},
+    ##################### Pod 생성 호출 #####################
+    # 사용자 정보
+    user_id = str(user["_id"])
+    
+    # Pod 생성 함수 호출
+    from core.create_pod import create_pod
+    try:
+        # user_id만 전달하여 Pod 생성 함수 호출
+        pod_result = await create_pod(user_id)
         
-        # 사용자별로 바꿔여 할듯? DB에서 끌어오는 식으로? 
-
-        {"name": "OPENAI_API_KEY", "value": os.getenv("OPENAI_API_KEY", "")},
-        {"name": "NOTION_API_TOKEN", "value": os.getenv("NOTION_API_TOKEN", "")},
-    ]
-
-    async with httpx.AsyncClient(timeout=5) as client:
-        try:
-            resp = await client.post(
-                "http://3.35.167.118:30082/deploy",
-                json={"user_id": str(user["_id"]), "env": env_list},
-            )
-            resp.raise_for_status()
-            service_url = resp.json().get("service_url")
-            logger.info(f"Agent for {user['_id']} at {service_url}")
-            # 필요하다면 DB나 세션에 service_url 저장
-        except Exception as e:
-            logger.warning(f"Agent deploy failed for {user['_id']}: {e}")
-    ##################### Agent Operator 호출 #####################
+        if pod_result.get("success", False):
+            logger.info(f"Pod 생성 성공 - 사용자: {user_id}, Pod: {pod_result.get('pod_name')}")
+        else:
+            logger.warning(f"Pod 생성 실패 - 사용자: {user_id}, 오류: {pod_result.get('message')}")
+    
+    except Exception as e:
+        # Pod 생성 오류가 로그인을 방해하지 않도록 예외 처리
+        logger.error(f"Pod 생성 중 예외 발생 - 사용자: {user_id}, 오류: {str(e)}")
+    ##################### Pod 생성 호출 #####################
     
     return {"access_token": access_token, "token_type": "bearer"}
 
