@@ -15,7 +15,7 @@ const Router = () => {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
       <Route path="/chat" element={<ChatPage />} />
-      <Route path="/mcps" element={<McpSetupPage />} />
+      <Route path="/mcp-setup" element={<McpSetupPage />} />
     </Routes>
   );
 };
