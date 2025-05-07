@@ -48,6 +48,7 @@ services:
       - "5173:5173" # Vite dev server 기본 포트
     volumes:
       - ./frontend/react:/app
-      # - /app/node_modules
+      - react_node_modules:/app/node_modules
     environment:
       - HOST=0.0.0.0 # Vite 외부 접속 허용
+    command: npm run dev
