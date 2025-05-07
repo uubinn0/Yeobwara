@@ -10,6 +10,7 @@ import hashlib
 from models.mcp_nosql import UserCreate, MCPCreate, MCPUpdate, EnvUpdate
 from core.security import get_password_hash, verify_password
 from core.database import async_db, codec_options
+from core.config import settings
 
 # 공개 ID 생성 함수
 def generate_public_id(prefix="mcp_", length=6):
@@ -32,7 +33,7 @@ def get_encryption_key(api_secret_key):
 # 환경변수에서 API_SECRET_KEY 가져오기
 def get_api_secret_key():
     """환경변수에서 API_SECRET_KEY 가져오기"""
-    api_secret_key = os.environ.get("API_SECRET_KEY")
+    api_secret_key = settings.API_SECRET_KEY
     if not api_secret_key:
         raise ValueError("API_SECRET_KEY 환경변수가 설정되지 않았습니다.")
     return api_secret_key
