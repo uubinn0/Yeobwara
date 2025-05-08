@@ -16,23 +16,28 @@ GMS_KEY      = os.getenv("GMS_KEY")
 GMS_RAW_BASE = os.getenv("GMS_API_BASE")           # 예) …/v1/chat/completions
 if not GMS_KEY or not GMS_RAW_BASE:
     raise RuntimeError("GMS_KEY 또는 GMS_API_BASE 미설정")
-
-# ************* 변경 START
-# ① SDK가 경로를 중복 붙이지 않도록 ‘/v1’까지만 잘라서 사용
+# ************* GMS base_url 고정 START
 if GMS_RAW_BASE.rstrip("/").endswith("/chat/completions"):
-    GMS_BASE = GMS_RAW_BASE.rsplit("/chat/completions", 1)[0]   # → …/v1
+    GMS_BASE_V1 = GMS_RAW_BASE.rsplit("/chat/completions", 1)[0]    # …/v1
 else:
-    GMS_BASE = GMS_RAW_BASE.rstrip("/")
+    GMS_BASE_V1 = GMS_RAW_BASE.rstrip("/")
 
-os.environ["OPENAI_API_KEY"]  = GMS_KEY
-os.environ["OPENAI_BASE_URL"] = GMS_BASE          # SDK용
-
+# base_url 은 ‘/v1’ 까지만!  ↙︎
+os.environ["OPENAI_BASE_URL"] = GMS_BASE_V1
 openai.api_key  = GMS_KEY
-try:
-    openai.base_url = GMS_BASE                    # openai ≥1.0
-except AttributeError:
-    openai.api_base = GMS_BASE                    # openai 0.x
-# ************* 변경 END
+openai.base_url = GMS_BASE_V1                        # openai ≥1.0
+# ************* GMS base_url 고정 END
+
+# ************* 모든 새 클라이언트도 같은 base 사용 START
+from openai import AsyncOpenAI, OpenAI
+from openai._client import _set_default_async_client, _set_default_client
+
+_set_default_async_client(AsyncOpenAI(api_key=GMS_KEY, base_url=GMS_BASE_V1))
+_set_default_client(OpenAI(api_key=GMS_KEY, base_url=GMS_BASE_V1))
+# ************* 모든 새 클라이언트도 같은 base 사용 END
+
+
+
 
 # ─────────────────────────────
 # Responses → ChatCompletions 우회
