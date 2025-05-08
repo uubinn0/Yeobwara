@@ -27,22 +27,20 @@ try:
 except AttributeError:
     openai.api_base = GMS_API_BASE      # openai 0.x 대응
 
-
-# *************  ← 추가 START
-# openai >=1.16 에서 responses.create → chat.completions.create 로 우회
-async def _responses_proxy(self, **kwargs):
+# 3) responses.create 비‧동기 모두 우회 → chat.completions.create
+async def _responses_proxy(self_or_cls, **kwargs):
     return await openai.chat.completions.create(**kwargs)
 
 try:
-    openai.resources.responses.responses.Responses.create = MethodType(
-        _responses_proxy, openai.resources.responses
-    )
-except AttributeError:
-    pass  # <1.16 이면 해당 속성이 없음
+    from openai.resources.responses import AsyncResponses, Responses
+    AsyncResponses.create = MethodType(_responses_proxy, AsyncResponses)
+    Responses.create      = MethodType(_responses_proxy, Responses)
+except Exception:
+    pass  # 구조 달라도 무시
+setattr(openai.responses, "create", _responses_proxy)
 # *************  ← 추가 END
 
-
-# 3) /models 호출을 목업해 초기화 400 방지
+# 4) /models 호출을 목업해 초기화 400 방지
 def _dummy_models_list(*args, **kwargs):
     return [{"id": "gpt-4.1-mini"}]
 
