@@ -188,7 +188,7 @@ export default function McpSetupPage() {
 
       {/* 환경변수 입력 다이얼로그 */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="bg-gray-900 text-white border-gray-700 w-[550px] max-w-[90vw] mx-auto">
+        <DialogContent className="bg-gray-900 text-white border-gray-700 w-[580px] max-w-[90vw] mx-auto">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold flex items-center">
               {selectedService && (
