@@ -78,16 +78,16 @@ async def deploy_agent(user_id: str, env_vars: list) -> str:
             if e.status != 409:  # 409(이미 존재) 에러는 무시하고 진행
                 raise
         
-    # Pod 생성 확인을 위한 대기
-    await asyncio.sleep(3)  # 적절한 대기 시간 설정
+    # # Pod 생성 확인을 위한 대기
+    # await asyncio.sleep(3)  # 적절한 대기 시간 설정
     
-    # Pod 이름 조회
-    pods = await asyncio.to_thread(
-        core_v1.list_namespaced_pod,
-        namespace=NAMESPACE,
-        label_selector=f"app={name}"
-    )
-    pod_name = pods.items[0].metadata.name if pods.items else None
+    # # Pod 이름 조회
+    # pods = await asyncio.to_thread(
+    #     core_v1.list_namespaced_pod,
+    #     namespace=NAMESPACE,
+    #     label_selector=f"app={name}"
+    # )
+    # pod_name = pods.items[0].metadata.name if pods.items else None
     
     # 서비스 URL + Pod 이름 반환
     # return {"service_url": f"http://{name}.{NAMESPACE}.svc.cluster.local", "pod_name": pod_name}
