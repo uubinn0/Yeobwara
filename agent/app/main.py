@@ -1,7 +1,8 @@
-import os
+import os, openai
 from fastapi import FastAPI, HTTPException
 from agents import Agent, Runner
 from agents.mcp.server import MCPServerStdio
+from types import MethodType
 
 app = FastAPI()
 
@@ -29,9 +30,6 @@ except AttributeError:
 
 # *************  ← 추가 START
 # openai >=1.16 에서 responses.create → chat.completions.create 로 우회
-from types import MethodType
-import openai
-
 async def _responses_proxy(self, **kwargs):
     return await openai.chat.completions.create(**kwargs)
 
