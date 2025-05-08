@@ -134,12 +134,11 @@ export default function McpSetupPage() {
       {/* 채팅으로 돌아가기 버튼 */}
       <Button 
         variant="ghost" 
-        className="fixed top-4 left-4 text-white hover:bg-gray-800 z-50"
+        className="fixed top-4 left-4 text-white hover:bg-gray-800 z-50 px-3 py-2 flex items-center"
         onClick={() => navigate("/chat")}
       >
         <ArrowLeft className="mr-2 h-4 w-4" />
-        {/* <span className="hidden sm:inline">채팅으로 돌아가기</span> */}
-        <span className="sm:hidden">채팅으로 돌아가기</span>
+        <span>채팅으로 돌아가기</span>
       </Button>
 
       <div className="w-full max-w-4xl z-10 pt-12">
@@ -189,7 +188,7 @@ export default function McpSetupPage() {
 
       {/* 환경변수 입력 다이얼로그 */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="bg-gray-900 text-white border-gray-700 w-[550px] max-w-[90vw] mx-auto">
+        <DialogContent className="bg-gray-900 text-white border-gray-700 w-[580px] max-w-[90vw] mx-auto">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold flex items-center">
               {selectedService && (
