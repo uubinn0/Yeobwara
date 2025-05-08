@@ -1,18 +1,4 @@
 services:
-  # agent:
-  #   build:
-  #     context: ./agent
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "8001:8001"
-  #   environment:
-  #     - OPENAI_API_KEY=${OPENAI_API_KEY}
-  #     - GITHUB_PERSONAL_ACCESS_TOKEN=${GITHUB_PERSONAL_ACCESS_TOKEN}
-  #     - NOTION_API_TOKEN=${NOTION_API_TOKEN}
-  #     - NOTION_PAGE_ID=${NOTION_PAGE_ID}
-  #     - GITLAB_PERSONAL_ACCESS_TOKEN=${GITLAB_PERSONAL_ACCESS_TOKEN}
-  #     - GITLAB_API_URL=${GITLAB_API_URL}
-
   fastapi:
     build:
       context: ./backend/fastapi
@@ -58,3 +44,13 @@ services:
     environment:
       - HOST=0.0.0.0 # Vite 외부 접속 허용
     command: npm run dev
+
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    depends_on:
+      - fastapi
+    ports:
+      - "80:80"
