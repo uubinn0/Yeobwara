@@ -16,7 +16,8 @@ os.environ["OPENAI_API_KEY"]  = GMS_KEY   # 기본 Client가 읽을 값
 os.environ["OPENAI_API_BASE"] = GMS_API_BASE
 import openai                      # ← 이제 import 시점에 키가 존재
 openai.api_key  = GMS_KEY          # 구버전 호출 대비
-openai.api_base = GMS_API_BASE
+openai.base_url = GMS_API_BASE.rsplit('/', 2)[0]
+# openai.api_base = GMS_API_BASE
 ###
 
 
