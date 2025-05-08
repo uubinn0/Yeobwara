@@ -48,7 +48,12 @@ OPENAI_API_KEY = os.getenv("GMS_KEY")
 OPENAI_BASE_URL = os.getenv("GMS_API_BASE")
 if not OPENAI_API_KEY:
     raise RuntimeError("OPENAI_API_KEY 환경 변수가 설정되지 않았습니다.")
-custom_client = AsyncOpenAI(base_url=OPENAI_BASE_URL)
+
+os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
+custom_client = AsyncOpenAI(
+    base_url=OPENAI_BASE_URL,
+    api_key=OPENAI_API_KEY
+)
 set_default_openai_client(custom_client)
 
 # MCP 서버들 설정 ( 어떤 github 을 npx 로 띄울건지 )
