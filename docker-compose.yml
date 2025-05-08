@@ -6,6 +6,8 @@ services:
     container_name: fastapi
     ports:
       - "8000:8000"
+    volumes:
+      - /home/ubuntu/.kube:/root/.kube:ro
     environment:
       # Agent Operator에서 던질 사용자별 ENV
       - OPENAI_API_KEY=${OPENAI_API_KEY}
