@@ -15,41 +15,35 @@ if not GMS_KEY or not GMS_API_BASE:
     raise RuntimeError("GMS_KEY 또는 GMS_API_BASE 환경 변수가 없습니다.")
 
 # ************* 변경 START
-# 1) '/api.openai.com/v1' 세그먼트 없으면 자동 보정
 if "api.openai.com" not in GMS_API_BASE:
     GMS_API_BASE = GMS_API_BASE.rstrip("/") + "/api.openai.com/v1"
 
-# 2) SDK 기본값 ENV 주입
 os.environ["OPENAI_API_KEY"]  = GMS_KEY
 os.environ["OPENAI_BASE_URL"] = GMS_API_BASE
 
-# 3) openai SDK 설정
-openai.api_key  = GMS_KEY
+openai.api_key = GMS_KEY
 try:
-    openai.base_url = GMS_API_BASE      # openai ≥1.0
+    openai.base_url = GMS_API_BASE
 except AttributeError:
-    openai.api_base = GMS_API_BASE      # openai 0.x
+    openai.api_base = GMS_API_BASE
 # ************* 변경 END
 
 # *************  _responses_proxy 교체 START
 SAFE_KEYS = {
-    "model","messages","stream","temperature","top_p","n",
-    "logit_bias","max_tokens","stop",
-    "presence_penalty","frequency_penalty","user"
+    "model", "messages", "stream", "temperature", "top_p", "n",
+    "logit_bias", "max_tokens", "stop",
+    "presence_penalty", "frequency_penalty", "user"
 }
 
 async def _responses_proxy(self_or_cls, **kwargs):
-    # ① instructions 우선 추출
-    instr = kwargs.pop("instructions", None)
+    instr = kwargs.pop("instructions", None)                     # ①
 
-    # ② Responses 전용·불필요 키 제거 (previous_response_id, include 등)
-    for k in list(kwargs):
+    for k in list(kwargs):                                       # ②
         if k not in SAFE_KEYS:
             kwargs.pop(k, None)
 
-    # ③ messages 구성
-    if "messages" not in kwargs:
-        if instr:   # instructions → system 메시지
+    if "messages" not in kwargs:                                 # ③
+        if instr:
             kwargs["messages"] = [{"role": "system", "content": instr}]
         else:
             prompt = kwargs.pop("prompt", None) or kwargs.pop("input", None)
@@ -57,13 +51,10 @@ async def _responses_proxy(self_or_cls, **kwargs):
                 raise TypeError("messages / prompt / instructions 인자 필요")
             kwargs["messages"] = [{"role": "user", "content": prompt}]
 
-    # ④ 기본 모델 보강
-    kwargs.setdefault("model", "gpt-4.1-mini")
+    kwargs.setdefault("model", "gpt-4.1-mini")                  # ④
 
-    # ⑤ 실제 호출
-    return await openai.chat.completions.create(**kwargs)
+    return await openai.chat.completions.create(**kwargs)        # ⑤
 
-from types import MethodType
 try:
     from openai.resources.responses import AsyncResponses, Responses
     AsyncResponses.create = MethodType(_responses_proxy, AsyncResponses)
@@ -73,20 +64,18 @@ except Exception:
 setattr(openai.responses, "create", _responses_proxy)
 # *************  _responses_proxy 교체 END
 
-
 # ************* 추가 START
-# /v1/models 400 회피용 목업
 def _dummy_models_list(*args, **kwargs):
     return [{"id": "gpt-4.1-mini"}]
 
 try:
-    openai.resources.models.list = _dummy_models_list   # openai ≥1.0
+    openai.resources.models.list = _dummy_models_list
 except AttributeError:
-    openai.Model.list = _dummy_models_list              # openai 0.x
+    openai.Model.list = _dummy_models_list
 # ************* 추가 END
 
 # ─────────────────────────────
-# MCP 서버 설정 (필요 시 수정)
+# MCP 서버 설정
 # ─────────────────────────────
 MCP_SERVER_CONFIG = {
     "github": {
@@ -118,7 +107,6 @@ MCP_SERVER_CONFIG = {
     },
 }
 
-# 선택 서비스 필터
 svc_env = os.getenv("MCP_SERVICES", "")
 if svc_env:
     allow = [s.strip() for s in svc_env.split(",") if s.strip()]
@@ -127,9 +115,6 @@ if svc_env:
 agent: Agent | None = None
 servers: list[MCPServerStdio] = []
 
-# ─────────────────────────────
-# FastAPI 이벤트
-# ─────────────────────────────
 @app.on_event("startup")
 async def startup_event():
     global agent, servers
