@@ -31,22 +31,37 @@ except AttributeError:
     openai.api_base = GMS_API_BASE      # openai 0.x
 # ************* 변경 END
 
-# ************* 추가 START
-# Responses API(≥1.16) → ChatCompletions 우회 + 불필요 인자 제거
+# ************* 수정 START
+# Responses API(≥1.16) → ChatCompletions 우회 + 전용 인자 처리
 SAFE_KEYS = {
-    "model","messages","stream","temperature","top_p","n","logit_bias",
-    "max_tokens","stop","presence_penalty","frequency_penalty","user"
+    "model", "messages", "stream", "temperature", "top_p", "n",
+    "logit_bias", "max_tokens", "stop",
+    "presence_penalty", "frequency_penalty", "user"
 }
+
 async def _responses_proxy(self_or_cls, **kwargs):
+    # ① instructions 먼저 분리
+    instructions = kwargs.pop("instructions", None)
+
+    # ② Responses 전용·불필요 키 제거 (previous_response_id, include 등)
     for k in list(kwargs):
         if k not in SAFE_KEYS:
-            kwargs.pop(k, None)                    # previous_response_id, instructions, include 등 제거
-    if "messages" not in kwargs:                   # prompt → messages 변환
-        prompt = kwargs.pop("prompt", None) or kwargs.pop("input", None)
-        if prompt is None:
-            raise TypeError("messages 또는 prompt/input 인자 필요")
-        kwargs["messages"] = [{"role": "user", "content": prompt}]
-    kwargs.setdefault("model", "gpt-4.1-mini")     # 기본 모델 보강
+            kwargs.pop(k, None)
+
+    # ③ messages 구성
+    if "messages" not in kwargs:
+        if instructions:                                 # instructions → system 메시지
+            kwargs["messages"] = [{"role": "system", "content": instructions}]
+        else:
+            prompt = kwargs.pop("prompt", None) or kwargs.pop("input", None)
+            if prompt is None:
+                raise TypeError("messages 또는 prompt/input/instructions 인자 필요")
+            kwargs["messages"] = [{"role": "user", "content": prompt}]
+
+    # ④ 기본 모델 보강
+    kwargs.setdefault("model", "gpt-4.1-mini")
+
+    # ⑤ 실제 호출
     return await openai.chat.completions.create(**kwargs)
 
 try:
@@ -56,7 +71,8 @@ try:
 except Exception:
     pass
 setattr(openai.responses, "create", _responses_proxy)
-# ************* 추가 END
+# ************* 수정 END
+
 
 # ************* 추가 START
 # /v1/models 400 회피용 목업
