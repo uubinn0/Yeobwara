@@ -78,3 +78,8 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     response: str
     timestamp: datetime
+
+# 비밀번호 변경 스키마
+class PasswordChange(BaseModel):
+    current_password: str
+    new_password: str
