@@ -1,82 +1,27 @@
-###########################################################################################
-"""
->> AI AGENT 입력 텍스트 예시
-curl -X POST http://localhost:8001/agent-query   -H "Content-Type: application/json"   --data @- <<EOF
-{"text": "GitHub의 test-repo 저장소의 master 브랜치에 README.md 파일을 만들어줘. 내용은 '테스트 중입니다'로 해줘."}
-EOF
-
-curl -X POST http://localhost:8001/agent-query   -H "Content-Type: application/json"   --data @- <<EOF
-{"text": "연결되어있는 내 notion 페이지 ( 페이지명 : mcp ) 에 '안녕하세요' 라는 문구 추가해줘. "}
-EOF
-
->> 고려사항
-- OUTPUT 으로 Internal Server Error 나왔을 경우 사용자에게 에러 어떤 식으로 전달? 챗봇 형식이라면 BE를 어떤 식으로 구성? 
-- fastapi > ai agent 로 로그인할 때에 꺼져있는 컨테이너 키고 기존 유저의 문맥 메모리 / 환경변수 / 사용할 mcp 리스트 줘야 하는데, 어떤 식으로 주고받을지? 
-- 모델 선택 가능한것도 만들면 좋을듯? 이건 기획때 BM 따라서 나뉘는데 구독형이면 그냥 박아놔도 괜찮고 / 사용자 API 토큰 쓰게할거면 선택 필수 
-
->> MCP 서버별 가능 기능
-##### github ##### 
-- 토큰 발급 : github.com/settings/tokens > Generate New Token > classic > 이름 / 기한 / 권한 설정 > 생성
-
-- [O] repo 생성
-- [X] 생성된 repo 에 파일 추가 ( init ) : github REST API 설계상 불가하다고...
-
-##### notion #####
-- [*] 토큰 발급 : 본인 노션 우측 상단 ``` > 연결 > 연결 관리 > API 연결 개발 또는 관리 > 새 API 통합 > 이름 / 사용할 워크스페이스 / 프라이빗 > 저장 > API 통합 설정 구성 > 기능 설정
-- [*] 페이지 연동 : 연동하고 싶은 페이지 > ``` > 연결 > '연결 검색' 창에 본인이 설정한 API 이름 입력 > 선택 
-- [O] 해당 페이지에 내용 입력하기 
-- [X] 연동 페이지 이외의 페이지 
-
-
-##### gitlab #####
-- [*] 토큰 발급 : 본인 노션 우측 상단 ``` > 연결 > 연결 관리 > API 연결 개발 또는 관리 > 새 API 통합 > 이름 / 사용할 워크스페이스 / 프라이빗 > 저장 > API 통합 설정 구성 > 기능 설정
-- [*] 개인 네임스페이스 ID 를 확인해야 함. curl --header "PRIVATE-TOKEN: @@@" https://lab.ssafy.com/api/v4/namespaces 을 이용해서 ID 알아오고 
-- [O] 해당 페이지에 내용 입력하기 
-- [X] 연동 페이지 이외의 페이지 
-"""
-###########################################################################################
-import os
-import openai
+import os, httpx, openai, json
 from fastapi import FastAPI, HTTPException
 from agents import Agent, Runner
 from agents.mcp.server import MCPServerStdio
 
-###
-from agents.models import OpenAIProvider, ModelProvider
-
-# GMS 게이트웨이 설정을 위한 커스텀 OpenAI Provider
-class GmsOpenAIProvider(OpenAIProvider):
-    def __init__(self, api_key=None, api_base=None):
-        super().__init__(api_key)
-        self.api_base = api_base
-        
-    def _get_client(self):
-        from openai import AsyncOpenAI
-        client = AsyncOpenAI(
-            api_key=self._stored_api_key,
-            base_url=self.api_base
-        )
-        return client
-###
-
 app = FastAPI()
 
-# GMS_KEY 및 GMS_API_BASE 환경변수로 OpenAI 클라이언트 설정
+# GMS 관련 환경변수
 GMS_KEY = os.getenv("GMS_KEY")
 GMS_API_BASE = os.getenv("GMS_API_BASE")
 if not GMS_KEY or not GMS_API_BASE:
     raise RuntimeError("GMS_KEY 또는 GMS_API_BASE 환경 변수가 설정되지 않았습니다.")
 
-###
-# Agent 생성 시 사용할 커스텀 Model Provider 생성
-model_provider = GmsOpenAIProvider(api_key=GMS_KEY, api_base=GMS_API_BASE)
-###
-
-# 환경변수로 OpenAI 패키지 기본값 설정
-os.environ["OPENAI_API_KEY"] = GMS_KEY
-os.environ["OPENAI_API_BASE"] = GMS_API_BASE
+# **************************
 openai.api_key = GMS_KEY
+# **************************
 openai.api_base = GMS_API_BASE
+# **************************
+
+# # 환경변수로 OpenAI 패키지 기본값 설정
+# os.environ["OPENAI_API_KEY"] = GMS_KEY
+# os.environ["OPENAI_API_BASE"] = GMS_API_BASE
+# openai.api_key = GMS_KEY
+# openai.api_base = GMS_API_BASE
 
 # OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 # if not OPENAI_API_KEY:
@@ -87,17 +32,14 @@ MCP_SERVER_CONFIG = {
     "github": {
         "type": "stdio",
         "params": {"command": "mcp-github-server", "args": [], "env": {"GITHUB_PERSONAL_ACCESS_TOKEN": os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN", "")}}
-        # "params": {"command": "npx", "args": ["-y", "@modelcontextprotocol/server-github"], "env": {"GITHUB_PERSONAL_ACCESS_TOKEN": os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN", "")}}
     },
     "notion": {
         "type": "stdio",
         "params": {"command": "mcp-notion-server", "args": [], "env": {"NOTION_API_TOKEN": os.getenv("NOTION_API_TOKEN", "")}}
-        # "params": {"command": "npx", "args": ["-y", "@suekou/mcp-notion-server"], "env": {"NOTION_API_TOKEN": os.getenv("NOTION_API_TOKEN", "")}}
     },
     "gitlab": {
         "type": "stdio",
         "params": {"command": "mcp-gitlab-server", "args": [], "env": {"GITLAB_PERSONAL_ACCESS_TOKEN": os.getenv("GITLAB_PERSONAL_ACCESS_TOKEN", ""), "GITLAB_API_URL": os.getenv("GITLAB_API_URL", "")}}
-        # "params": {"command": "npx", "args": ["-y", "@modelcontextprotocol/server-gitlab"], "env": {"GITLAB_PERSONAL_ACCESS_TOKEN": os.getenv("GITLAB_PERSONAL_ACCESS_TOKEN", ""), "GITLAB_API_URL": os.getenv("GITLAB_API_URL", "")}}
     },
 }
 
@@ -122,8 +64,7 @@ async def startup_event():
         name="Assistant",
         instructions="Use the tools to achieve the task",
         model="gpt-4.1-mini",
-        mcp_servers=servers,
-        model_provider=model_provider
+        mcp_servers=servers
     )
 
 # 앱 종료 시 모든 서버 정리
