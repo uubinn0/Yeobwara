@@ -41,6 +41,24 @@ from fastapi import FastAPI, HTTPException
 from agents import Agent, Runner
 from agents.mcp.server import MCPServerStdio
 
+###
+from agents.models import OpenAIProvider, ModelProvider
+
+# GMS 게이트웨이 설정을 위한 커스텀 OpenAI Provider
+class GmsOpenAIProvider(OpenAIProvider):
+    def __init__(self, api_key=None, api_base=None):
+        super().__init__(api_key)
+        self.api_base = api_base
+        
+    def _get_client(self):
+        from openai import AsyncOpenAI
+        client = AsyncOpenAI(
+            api_key=self._stored_api_key,
+            base_url=self.api_base
+        )
+        return client
+###
+
 app = FastAPI()
 
 # GMS_KEY 및 GMS_API_BASE 환경변수로 OpenAI 클라이언트 설정
@@ -48,6 +66,12 @@ GMS_KEY = os.getenv("GMS_KEY")
 GMS_API_BASE = os.getenv("GMS_API_BASE")
 if not GMS_KEY or not GMS_API_BASE:
     raise RuntimeError("GMS_KEY 또는 GMS_API_BASE 환경 변수가 설정되지 않았습니다.")
+
+###
+# Agent 생성 시 사용할 커스텀 Model Provider 생성
+model_provider = GmsOpenAIProvider(api_key=GMS_KEY, api_base=GMS_API_BASE)
+###
+
 # 환경변수로 OpenAI 패키지 기본값 설정
 os.environ["OPENAI_API_KEY"] = GMS_KEY
 os.environ["OPENAI_API_BASE"] = GMS_API_BASE
@@ -98,7 +122,8 @@ async def startup_event():
         name="Assistant",
         instructions="Use the tools to achieve the task",
         model="gpt-4.1-mini",
-        mcp_servers=servers
+        mcp_servers=servers,
+        model_provider=model_provider
     )
 
 # 앱 종료 시 모든 서버 정리
