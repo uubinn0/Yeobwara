@@ -43,6 +43,9 @@ services:
       - GMS_KEY=${GMS_KEY}
       - GMS_API_BASE=${GMS_API_BASE}
 
+      # AGENT 설정
+      - AGNET_URL=${AGNET_URL}
+
       # CORS 설정
       - CORS_ORIGINS=${CORS_ORIGINS}
 
