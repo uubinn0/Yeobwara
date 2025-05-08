@@ -2,9 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from datetime import timedelta
 from typing import Dict, Any
-from models.mcp_nosql import UserCreate, User, Token
+from models.mcp_nosql import UserCreate, User, Token, PasswordChange
 from routers.nosql_auth import get_current_user, get_admin_user
 from core.security import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
+from core.password_validator import validate_password
 import crud.nosql as nosql_crud
 import os
 import httpx
@@ -20,6 +21,14 @@ router = APIRouter(
 @router.post("/signup", response_model=User)
 async def signup(user: UserCreate):
     """새로운 사용자를 등록합니다."""
+    # 비밀번호 유효성 검사
+    is_valid, error_message = validate_password(user.password)
+    if not is_valid:
+        raise HTTPException(
+            status_code=400,
+            detail=error_message
+        )
+        
     db_user = await nosql_crud.create_user(user)
     if db_user is None:
         raise HTTPException(
@@ -98,6 +107,32 @@ async def delete_current_user(current_user: dict = Depends(get_current_user)):
         )
     
     return {"success": True, "message": "사용자가 성공적으로 삭제되었습니다"}
+
+@router.put("/change-password", response_model=Dict[str, Any])
+async def change_password(password_data: PasswordChange, current_user: dict = Depends(get_current_user)):
+    """로그인한 사용자의 비밀번호를 변경합니다."""
+    # 새 비밀번호 유효성 검사
+    is_valid, error_message = validate_password(password_data.new_password)
+    if not is_valid:
+        raise HTTPException(
+            status_code=400,
+            detail=error_message
+        )
+        
+    user_id = str(current_user["_id"])
+    result = await nosql_crud.change_user_password(
+        user_id, 
+        password_data.current_password, 
+        password_data.new_password
+    )
+    
+    if not result["success"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=result["message"]
+        )
+    
+    return result
 
 @router.delete("/{user_id}", response_model=Dict[str, Any])
 async def delete_user_by_id(user_id: str, _: dict = Depends(get_admin_user)):
