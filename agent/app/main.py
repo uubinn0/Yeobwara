@@ -6,46 +6,47 @@ from types import MethodType
 
 app = FastAPI()
 
-# GMS 관련 환경변수
-GMS_KEY = os.getenv("GMS_KEY")
-GMS_API_BASE = os.getenv("GMS_API_BASE")
+# ─────────────────────────────
+# GMS 토큰‧엔드포인트 (ENV로 주입)
+# ─────────────────────────────
+GMS_KEY       = os.getenv("GMS_KEY")
+GMS_API_BASE  = os.getenv("GMS_API_BASE")
 if not GMS_KEY or not GMS_API_BASE:
-    raise RuntimeError("GMS_KEY 또는 GMS_API_BASE 환경 변수가 설정되지 않았습니다.")
+    raise RuntimeError("GMS_KEY 또는 GMS_API_BASE 환경 변수가 없습니다.")
 
-# *************  ← 추가‧수정 START
-# 1) GMS_BASE 보정: '/api.openai.com/v1' 세그먼트 없으면 자동 붙이기
+# ************* 변경 START
+# 1) '/api.openai.com/v1' 세그먼트 없으면 자동 보정
 if "api.openai.com" not in GMS_API_BASE:
     GMS_API_BASE = GMS_API_BASE.rstrip("/") + "/api.openai.com/v1"
 
+# 2) SDK 기본값 ENV 주입
 os.environ["OPENAI_API_KEY"]  = GMS_KEY
 os.environ["OPENAI_BASE_URL"] = GMS_API_BASE
 
-# 2) OpenAI SDK에 프록시·키 주입
-openai.api_key = GMS_KEY
+# 3) openai SDK 설정
+openai.api_key  = GMS_KEY
 try:
-    openai.base_url = GMS_API_BASE      # openai ≥ 1.0
+    openai.base_url = GMS_API_BASE      # openai ≥1.0
 except AttributeError:
-    openai.api_base = GMS_API_BASE      # openai 0.x 대응
+    openai.api_base = GMS_API_BASE      # openai 0.x
+# ************* 변경 END
 
-# *************  ← 교체 START
-# openai ≥1.16: Responses(동·비동기) → chat.completions 우회
-#               + Responses 전용 키(pop) + 기본 model/messages 보강
+# ************* 추가 START
+# Responses API(≥1.16) → ChatCompletions 우회 + 불필요 인자 제거
+SAFE_KEYS = {
+    "model","messages","stream","temperature","top_p","n","logit_bias",
+    "max_tokens","stop","presence_penalty","frequency_penalty","user"
+}
 async def _responses_proxy(self_or_cls, **kwargs):
-    # ① Responses 전용 매개변수 제거
-    for k in ("previous_response_id", "response_id", "instructions"):
-        kwargs.pop(k, None)
-
-    # ② prompt / input → messages 변환
-    if "messages" not in kwargs:
+    for k in list(kwargs):
+        if k not in SAFE_KEYS:
+            kwargs.pop(k, None)                    # previous_response_id, instructions, include 등 제거
+    if "messages" not in kwargs:                   # prompt → messages 변환
         prompt = kwargs.pop("prompt", None) or kwargs.pop("input", None)
         if prompt is None:
-            raise TypeError("`messages` 또는 `prompt`/`input` 인자 필요")
+            raise TypeError("messages 또는 prompt/input 인자 필요")
         kwargs["messages"] = [{"role": "user", "content": prompt}]
-
-    # ③ 기본 모델 보강
-    kwargs.setdefault("model", "gpt-4.1-mini")
-
-    # ④ 실제 호출
+    kwargs.setdefault("model", "gpt-4.1-mini")     # 기본 모델 보강
     return await openai.chat.completions.create(**kwargs)
 
 try:
@@ -53,21 +54,24 @@ try:
     AsyncResponses.create = MethodType(_responses_proxy, AsyncResponses)
     Responses.create      = MethodType(_responses_proxy, Responses)
 except Exception:
-    pass  # 구조가 달라도 무시
+    pass
 setattr(openai.responses, "create", _responses_proxy)
-# *************  ← 교체 END
+# ************* 추가 END
 
-# 4) /models 호출을 목업해 초기화 400 방지
+# ************* 추가 START
+# /v1/models 400 회피용 목업
 def _dummy_models_list(*args, **kwargs):
     return [{"id": "gpt-4.1-mini"}]
 
 try:
-    openai.resources.models.list = _dummy_models_list   # openai ≥ 1.0
+    openai.resources.models.list = _dummy_models_list   # openai ≥1.0
 except AttributeError:
     openai.Model.list = _dummy_models_list              # openai 0.x
-# *************  ← 추가‧수정 END
+# ************* 추가 END
 
-# MCP 서버들 설정
+# ─────────────────────────────
+# MCP 서버 설정 (필요 시 수정)
+# ─────────────────────────────
 MCP_SERVER_CONFIG = {
     "github": {
         "type": "stdio",
@@ -98,15 +102,18 @@ MCP_SERVER_CONFIG = {
     },
 }
 
-# 환경변수 MCP_SERVICES 기반으로 사용할 서비스만 필터링
-services_env = os.getenv("MCP_SERVICES", "")
-if services_env:
-    allowed = [s.strip() for s in services_env.split(",") if s.strip()]
-    MCP_SERVER_CONFIG = {k: v for k, v in MCP_SERVER_CONFIG.items() if k in allowed}
+# 선택 서비스 필터
+svc_env = os.getenv("MCP_SERVICES", "")
+if svc_env:
+    allow = [s.strip() for s in svc_env.split(",") if s.strip()]
+    MCP_SERVER_CONFIG = {k: v for k, v in MCP_SERVER_CONFIG.items() if k in allow}
 
 agent: Agent | None = None
 servers: list[MCPServerStdio] = []
 
+# ─────────────────────────────
+# FastAPI 이벤트
+# ─────────────────────────────
 @app.on_event("startup")
 async def startup_event():
     global agent, servers
