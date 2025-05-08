@@ -15,7 +15,3 @@ COPY . .
 
 # 포트 노출 (Vite 기본: 5173)
 EXPOSE 5173
-
-# 개발 서버 실행 (Vite)
-# CMD ["ls", "-l"]
-# CMD ["npm", "run", "dev"]

@@ -18,5 +18,11 @@ export default defineConfig({
       'k12b107.p.ssafy.io'
     ],
     port: 5173,       // 명시적으로 포트 고정 (선택)
+    hmr: {
+      host: 'k12b107.p.ssafy.io',
+      protocol: 'wss',
+      clientPort: 443
+    },
+    https: true,
   },
 });

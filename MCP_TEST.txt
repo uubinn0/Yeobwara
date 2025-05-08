@@ -1,1 +1,0 @@
-This is a test file named MCP_TEST.txt.

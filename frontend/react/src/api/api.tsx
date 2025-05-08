@@ -2,7 +2,7 @@ import axios from 'axios';
 import type { InternalAxiosRequestConfig } from 'axios';
 
 // const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
-const baseURL= import.meta.env.VITE_API_BASE || "http://localhost:8000";
+const baseURL= import.meta.env.VITE_API_BASE || "https://k12b107.p.ssafy.io/api";
 
 const api = axios.create({
   baseURL,
