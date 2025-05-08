@@ -29,6 +29,10 @@ class Settings(BaseSettings):
     # GMS API KEY
     GMS_KEY: str = os.getenv("GMS_KEY")
     GMS_API_BASE: str = os.getenv("GMS_API_BASE")
+
+    # AGENT
+    AGNET_URL: str = os.getenv("AGENT_URL")
+
     # CORS 설정
     CORS_ORIGINS: List[str] = Field(
     default_factory=lambda: json.loads(os.getenv("CORS_ORIGINS", "[]"))
