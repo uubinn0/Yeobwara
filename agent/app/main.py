@@ -27,8 +27,22 @@ try:
 except AttributeError:
     openai.api_base = GMS_API_BASE      # openai 0.x 대응
 
-# 3) responses.create 비‧동기 모두 우회 → chat.completions.create
+# *************  ← 교체 START
+# openai ≥1.16: responses.create / AsyncResponses.create를
+#              chat.completions.create 로 우회하면서
+#              매개변수 형식을 자동 변환해 준다.
 async def _responses_proxy(self_or_cls, **kwargs):
+    # ❶ messages 인자가 없으면 prompt → messages 로 변환
+    if "messages" not in kwargs:
+        prompt = kwargs.pop("prompt", None) or kwargs.pop("input", None)
+        if prompt is None:
+            raise TypeError("`prompt` or `messages` 중 하나는 반드시 필요합니다.")
+        kwargs["messages"] = [{"role": "user", "content": prompt}]
+
+    # ❷ model 인자가 없으면 기본값 보충
+    kwargs.setdefault("model", "gpt-4.1-mini")
+
+    # ❸ 최종적으로 /chat/completions 엔드포인트 호출
     return await openai.chat.completions.create(**kwargs)
 
 try:
@@ -36,9 +50,10 @@ try:
     AsyncResponses.create = MethodType(_responses_proxy, AsyncResponses)
     Responses.create      = MethodType(_responses_proxy, Responses)
 except Exception:
-    pass  # 구조 달라도 무시
+    pass  # 모듈 구조가 달라도 무시
 setattr(openai.responses, "create", _responses_proxy)
-# *************  ← 추가 END
+# *************  ← 교체 END
+
 
 # 4) /models 호출을 목업해 초기화 400 방지
 def _dummy_models_list(*args, **kwargs):
