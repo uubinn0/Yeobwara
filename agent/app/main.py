@@ -16,6 +16,9 @@ if not GMS_KEY or not GMS_API_BASE:
 if "api.openai.com" not in GMS_API_BASE:
     GMS_API_BASE = GMS_API_BASE.rstrip("/") + "/api.openai.com/v1"
 
+os.environ["OPENAI_API_KEY"]  = GMS_KEY
+os.environ["OPENAI_BASE_URL"] = GMS_API_BASE
+
 # 2) OpenAI SDK에 프록시·키 주입
 openai.api_key = GMS_KEY
 try:
