@@ -541,3 +541,39 @@ async def get_pod_name(user_id: str) -> str:
     except Exception as e:
         print(f"pod_name 조회 중 오류 발생: {e}")
         return None
+        
+async def change_user_password(user_id: str, current_password: str, new_password: str) -> dict:
+    """
+    사용자의 비밀번호를 변경합니다.
+    1. 현재 비밀번호 확인
+    2. 새 비밀번호로 해시 생성
+    3. 데이터베이스 업데이트
+    """
+    try:
+        # 사용자 정보 가져오기
+        user = await get_user_by_id(user_id)
+        if not user:
+            return {"success": False, "message": "사용자를 찾을 수 없습니다."}
+        
+        # 현재 비밀번호 확인
+        if not verify_password(current_password, user["hashed_password"]):
+            return {"success": False, "message": "현재 비밀번호가 일치하지 않습니다."}
+        
+        # 새 비밀번호 해시 생성
+        hashed_password = get_password_hash(new_password)
+        
+        # 비밀번호 업데이트
+        uuid_id = uuid.UUID(user_id)
+        result = await users.update_one(
+            {"_id": uuid_id},
+            {"$set": {"hashed_password": hashed_password}}
+        )
+        
+        if result.modified_count > 0:
+            return {"success": True, "message": "비밀번호가 성공적으로 변경되었습니다."}
+        else:
+            return {"success": False, "message": "비밀번호 변경 중 오류가 발생했습니다."}
+    
+    except Exception as e:
+        print(f"비밀번호 변경 중 오류 발생: {e}")
+        return {"success": False, "message": f"오류 발생: {str(e)}"}
