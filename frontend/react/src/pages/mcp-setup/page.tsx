@@ -134,12 +134,11 @@ export default function McpSetupPage() {
       {/* 채팅으로 돌아가기 버튼 */}
       <Button 
         variant="ghost" 
-        className="fixed top-4 left-4 text-white hover:bg-gray-800 z-50"
+        className="fixed top-4 left-4 text-white hover:bg-gray-800 z-50 px-3 py-2 flex items-center"
         onClick={() => navigate("/chat")}
       >
         <ArrowLeft className="mr-2 h-4 w-4" />
-        {/* <span className="hidden sm:inline">채팅으로 돌아가기</span> */}
-        <span className="sm:hidden">채팅으로 돌아가기</span>
+        <span>채팅으로 돌아가기</span>
       </Button>
 
       <div className="w-full max-w-4xl z-10 pt-12">
