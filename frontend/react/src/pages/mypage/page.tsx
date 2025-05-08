@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useNavigate } from "react-router-dom"
-import { User, AlertTriangle } from "lucide-react"
+import { User, AlertTriangle, ArrowLeft } from "lucide-react"
 import api from "../../api/api"
 import {
   Dialog,
@@ -53,6 +53,16 @@ export default function MyPage() {
         <div className="stars"></div>
         <div className="twinkling"></div>
       </div>
+
+      {/* 채팅으로 돌아가기 버튼 */}
+      <Button 
+        variant="ghost" 
+        className="absolute top-4 left-4 text-white hover:bg-gray-800 z-10"
+        onClick={() => navigate("/chat")}
+      >
+        <ArrowLeft className="mr-2 h-4 w-4" />
+        채팅으로 돌아가기
+      </Button>
 
       <Card className="w-full max-w-md bg-black/60 border border-gray-800 backdrop-blur-lg">
         <CardHeader className="space-y-1 text-center">
