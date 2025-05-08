@@ -13,10 +13,10 @@ if not GMS_KEY or not GMS_API_BASE:
 
 ###
 os.environ["OPENAI_API_KEY"]  = GMS_KEY   # 기본 Client가 읽을 값
-os.environ["OPENAI_API_BASE"] = GMS_API_BASE
+os.environ["OPENAI_BASE_URL"] = GMS_API_BASE.rstrip("/")        # '/v1'까지 포함
 import openai                      # ← 이제 import 시점에 키가 존재
 openai.api_key  = GMS_KEY          # 구버전 호출 대비
-openai.base_url = GMS_API_BASE.rsplit('/', 2)[0]
+# openai.base_url = GMS_API_BASE.rsplit('/', 2)[0]
 # openai.api_base = GMS_API_BASE
 ###
 
