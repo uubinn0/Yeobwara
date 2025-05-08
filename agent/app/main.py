@@ -1,4 +1,4 @@
-import os
+import os, httpx, openai, json
 from fastapi import FastAPI, HTTPException
 from agents import Agent, Runner
 from agents.mcp.server import MCPServerStdio
@@ -11,33 +11,56 @@ GMS_API_BASE = os.getenv("GMS_API_BASE")
 if not GMS_KEY or not GMS_API_BASE:
     raise RuntimeError("GMS_KEY 또는 GMS_API_BASE 환경 변수가 설정되지 않았습니다.")
 
-###
-os.environ["OPENAI_API_KEY"]  = GMS_KEY   # 기본 Client가 읽을 값
-os.environ["OPENAI_BASE_URL"] = GMS_API_BASE.rstrip("/")        # '/v1'까지 포함
-import openai                      # ← 이제 import 시점에 키가 존재
-openai.api_key  = GMS_KEY          # 구버전 호출 대비
-# openai.base_url = GMS_API_BASE.rsplit('/', 2)[0]
-# openai.api_base = GMS_API_BASE
-###
+# *************  ← 추가‧수정 START
+# 1) GMS_BASE 보정: '/api.openai.com/v1' 세그먼트 없으면 자동 붙이기
+if "api.openai.com" not in GMS_API_BASE:
+    GMS_API_BASE = GMS_API_BASE.rstrip("/") + "/api.openai.com/v1"
 
+# 2) OpenAI SDK에 프록시·키 주입
+openai.api_key = GMS_KEY
+try:
+    openai.base_url = GMS_API_BASE      # openai ≥ 1.0
+except AttributeError:
+    openai.api_base = GMS_API_BASE      # openai 0.x 대응
 
-# OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-# if not OPENAI_API_KEY:
-#     raise RuntimeError("OPENAI_API_KEY 환경 변수가 설정되지 않았습니다.")
+# 3) /models 호출을 목업해 초기화 400 방지
+def _dummy_models_list(*args, **kwargs):
+    return [{"id": "gpt-4.1-mini"}]
 
-# MCP 서버들 설정 ( 어떤 github 을 npx 로 띄울건지 )
+try:
+    openai.resources.models.list = _dummy_models_list   # openai ≥ 1.0
+except AttributeError:
+    openai.Model.list = _dummy_models_list              # openai 0.x
+# *************  ← 추가‧수정 END
+
+# MCP 서버들 설정
 MCP_SERVER_CONFIG = {
     "github": {
         "type": "stdio",
-        "params": {"command": "mcp-github-server", "args": [], "env": {"GITHUB_PERSONAL_ACCESS_TOKEN": os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN", "")}}
+        "params": {
+            "command": "mcp-github-server",
+            "args": [],
+            "env": {"GITHUB_PERSONAL_ACCESS_TOKEN": os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN", "")},
+        },
     },
     "notion": {
         "type": "stdio",
-        "params": {"command": "mcp-notion-server", "args": [], "env": {"NOTION_API_TOKEN": os.getenv("NOTION_API_TOKEN", "")}}
+        "params": {
+            "command": "mcp-notion-server",
+            "args": [],
+            "env": {"NOTION_API_TOKEN": os.getenv("NOTION_API_TOKEN", "")},
+        },
     },
     "gitlab": {
         "type": "stdio",
-        "params": {"command": "mcp-gitlab-server", "args": [], "env": {"GITLAB_PERSONAL_ACCESS_TOKEN": os.getenv("GITLAB_PERSONAL_ACCESS_TOKEN", ""), "GITLAB_API_URL": os.getenv("GITLAB_API_URL", "")}}
+        "params": {
+            "command": "mcp-gitlab-server",
+            "args": [],
+            "env": {
+                "GITLAB_PERSONAL_ACCESS_TOKEN": os.getenv("GITLAB_PERSONAL_ACCESS_TOKEN", ""),
+                "GITLAB_API_URL": os.getenv("GITLAB_API_URL", ""),
+            },
+        },
     },
 }
 
@@ -50,7 +73,6 @@ if services_env:
 agent: Agent | None = None
 servers: list[MCPServerStdio] = []
 
-# 앱 시작 시 필요한 서버만 연결하고 Agent 초기화
 @app.on_event("startup")
 async def startup_event():
     global agent, servers
@@ -62,20 +84,20 @@ async def startup_event():
         name="Assistant",
         instructions="Use the tools to achieve the task",
         model="gpt-4.1-mini",
-        mcp_servers=servers
+        mcp_servers=servers,
     )
 
-# 앱 종료 시 모든 서버 정리
 @app.on_event("shutdown")
 async def shutdown_event():
     for srv in servers:
         await srv.cleanup()
 
-# 메시지 처리 핸들러: 단순히 global agent 사용
 @app.post("/agent-query")
 async def query_agent(payload: dict):
-    if agent is None: raise HTTPException(503, "Agent가 초기화되지 않았습니다.")
+    if agent is None:
+        raise HTTPException(503, "Agent가 초기화되지 않았습니다.")
     text = payload.get("text")
-    if not text: raise HTTPException(400, "'text' 필드가 필요합니다.")
+    if not text:
+        raise HTTPException(400, "'text' 필드가 필요합니다.")
     result = await Runner.run(agent, text)
     return {"response": result.final_output}
