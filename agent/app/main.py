@@ -31,17 +31,16 @@ except AttributeError:
     openai.api_base = GMS_API_BASE      # openai 0.x
 # ************* 변경 END
 
-# ************* 수정 START
-# Responses API(≥1.16) → ChatCompletions 우회 + 전용 인자 처리
+# *************  _responses_proxy 교체 START
 SAFE_KEYS = {
-    "model", "messages", "stream", "temperature", "top_p", "n",
-    "logit_bias", "max_tokens", "stop",
-    "presence_penalty", "frequency_penalty", "user"
+    "model","messages","stream","temperature","top_p","n",
+    "logit_bias","max_tokens","stop",
+    "presence_penalty","frequency_penalty","user"
 }
 
 async def _responses_proxy(self_or_cls, **kwargs):
-    # ① instructions 먼저 분리
-    instructions = kwargs.pop("instructions", None)
+    # ① instructions 우선 추출
+    instr = kwargs.pop("instructions", None)
 
     # ② Responses 전용·불필요 키 제거 (previous_response_id, include 등)
     for k in list(kwargs):
@@ -50,12 +49,12 @@ async def _responses_proxy(self_or_cls, **kwargs):
 
     # ③ messages 구성
     if "messages" not in kwargs:
-        if instructions:                                 # instructions → system 메시지
-            kwargs["messages"] = [{"role": "system", "content": instructions}]
+        if instr:   # instructions → system 메시지
+            kwargs["messages"] = [{"role": "system", "content": instr}]
         else:
             prompt = kwargs.pop("prompt", None) or kwargs.pop("input", None)
             if prompt is None:
-                raise TypeError("messages 또는 prompt/input/instructions 인자 필요")
+                raise TypeError("messages / prompt / instructions 인자 필요")
             kwargs["messages"] = [{"role": "user", "content": prompt}]
 
     # ④ 기본 모델 보강
@@ -64,6 +63,7 @@ async def _responses_proxy(self_or_cls, **kwargs):
     # ⑤ 실제 호출
     return await openai.chat.completions.create(**kwargs)
 
+from types import MethodType
 try:
     from openai.resources.responses import AsyncResponses, Responses
     AsyncResponses.create = MethodType(_responses_proxy, AsyncResponses)
@@ -71,7 +71,7 @@ try:
 except Exception:
     pass
 setattr(openai.responses, "create", _responses_proxy)
-# ************* 수정 END
+# *************  _responses_proxy 교체 END
 
 
 # ************* 추가 START
