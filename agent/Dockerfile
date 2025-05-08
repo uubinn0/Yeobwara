@@ -18,7 +18,10 @@ RUN npm install -g @modelcontextprotocol/server-gitlab
 
 
 RUN uv pip install --system \
-  fastapi uvicorn[standard] openai>=1.14,<1.16 openai-agents
+    fastapi \
+    "uvicorn[standard]" \
+    "openai>=1.14,<1.16" \
+    openai-agents
 
 # 앱 복사
 COPY app/ ./app/
