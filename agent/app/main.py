@@ -28,24 +28,24 @@ except AttributeError:
     openai.api_base = GMS_API_BASE      # openai 0.x 대응
 
 # *************  ← 교체 START
-# openai ≥1.16: responses.create / AsyncResponses.create 를
-#              chat.completions.create 로 우회 + 불필요 인자 제거
+# openai ≥1.16: Responses(동·비동기) → chat.completions 우회
+#               + Responses 전용 키(pop) + 기본 model/messages 보강
 async def _responses_proxy(self_or_cls, **kwargs):
-    # ❶ Responses-전용 키 제거
-    for k in ("previous_response_id", "response_id"):
+    # ① Responses 전용 매개변수 제거
+    for k in ("previous_response_id", "response_id", "instructions"):
         kwargs.pop(k, None)
 
-    # ❷ prompt / input → messages 로 변환
+    # ② prompt / input → messages 변환
     if "messages" not in kwargs:
         prompt = kwargs.pop("prompt", None) or kwargs.pop("input", None)
         if prompt is None:
             raise TypeError("`messages` 또는 `prompt`/`input` 인자 필요")
         kwargs["messages"] = [{"role": "user", "content": prompt}]
 
-    # ❸ 기본 모델 보충 (없을 때만)
+    # ③ 기본 모델 보강
     kwargs.setdefault("model", "gpt-4.1-mini")
 
-    # ❹ /chat/completions 실제 호출
+    # ④ 실제 호출
     return await openai.chat.completions.create(**kwargs)
 
 try:
@@ -56,8 +56,6 @@ except Exception:
     pass  # 구조가 달라도 무시
 setattr(openai.responses, "create", _responses_proxy)
 # *************  ← 교체 END
-
-
 
 # 4) /models 호출을 목업해 초기화 400 방지
 def _dummy_models_list(*args, **kwargs):
