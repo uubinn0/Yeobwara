@@ -20,8 +20,10 @@ RUN npm install -g @modelcontextprotocol/server-gitlab
 RUN uv pip install --system \
     fastapi \
     "uvicorn[standard]" \
-    "openai>=1.14,<1.16" \
     openai-agents
+
+# 2) openai 버전을 1.15.x(≤1.15.0)로 강제 다운그레이드
+RUN uv pip install --system --no-deps "openai==1.15.0"
 
 # 앱 복사
 COPY app/ ./app/
