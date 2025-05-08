@@ -35,28 +35,21 @@ EOF
 - [X] 연동 페이지 이외의 페이지 
 """
 ###########################################################################################
-import os, httpx, openai, json
+import os
 from fastapi import FastAPI, HTTPException
-from agents import Agent, Runner
+from agents import Agent, Runner, set_default_openai_client
 from agents.mcp.server import MCPServerStdio
+from openai import AsyncOpenAI
+
 
 app = FastAPI()
 
-# GMS 관련 환경변수
-# GMS_KEY = os.getenv("GMS_KEY")
-# GMS_API_BASE = os.getenv("GMS_API_BASE")
-# if not GMS_KEY or not GMS_API_BASE:
-#     raise RuntimeError("GMS_KEY 또는 GMS_API_BASE 환경 변수가 설정되지 않았습니다.")
-
-# # 환경변수로 OpenAI 패키지 기본값 설정
-# os.environ["OPENAI_API_KEY"] = GMS_KEY
-# os.environ["OPENAI_API_BASE"] = GMS_API_BASE
-# openai.api_key = GMS_KEY
-# openai.api_base = GMS_API_BASE
-
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPENAI_API_KEY = os.getenv("GMS_KEY")
+OPENAI_BASE_URL = os.getenv("GMS_API_BASE")
 if not OPENAI_API_KEY:
     raise RuntimeError("OPENAI_API_KEY 환경 변수가 설정되지 않았습니다.")
+custom_client = AsyncOpenAI(base_url=OPENAI_BASE_URL)
+set_default_openai_client(custom_client)
 
 # MCP 서버들 설정 ( 어떤 github 을 npx 로 띄울건지 )
 MCP_SERVER_CONFIG = {
