@@ -11,6 +11,7 @@ import {
   PopoverContent,
   PopoverTrigger
 } from "@/components/ui/popover"
+import { Textarea } from "@/components/ui/textarea"
 
 // 메시지 타입 정의
 interface Message {
@@ -112,6 +113,30 @@ export default function ChatPage() {
     setSettingsOpen(false)
   }
 
+  // 텍스트 입력 시 높이 자동 조절을 위한 ref
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  
+  // 텍스트 입력 시 높이 자동 조절
+  const adjustTextareaHeight = () => {
+    const textarea = textareaRef.current
+    if (textarea) {
+      textarea.style.height = 'auto'
+      const newHeight = Math.min(textarea.scrollHeight, 150) // 최대 높이 150px로 제한
+      textarea.style.height = `${newHeight}px`
+    }
+  }
+
+  // 입력 변경 시 높이 조절 및 상태 업데이트
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInput(e.target.value)
+    adjustTextareaHeight()
+  }
+
+  // 초기 렌더링 시 높이 조절
+  useEffect(() => {
+    adjustTextareaHeight()
+  }, [])
+
   return (
     <div className="min-h-screen bg-black flex flex-col">
       {/* 별 배경 */}
@@ -123,7 +148,7 @@ export default function ChatPage() {
       {/* 헤더 */}
       <header className="z-10 p-4 border-b border-gray-800 bg-black/60 backdrop-blur-lg">
         <div className="container mx-auto flex justify-between items-center">
-          <h1 className="text-xl font-bold text-white">우주 채팅</h1>
+          <h1 className="text-xl font-bold text-white">여봐라</h1>
           <div className="flex space-x-2">
             <Popover open={settingsOpen} onOpenChange={setSettingsOpen}>
               <PopoverTrigger asChild>
@@ -194,18 +219,25 @@ export default function ChatPage() {
       </div>
 
       {/* 입력 영역 */}
-      <div className="p-4 border-t border-gray-800 bg-black/60 backdrop-blur-lg z-10">
+      <div className="pt-6 pb-6 px-8 border-t border-gray-800 bg-black/60 backdrop-blur-lg z-10">
         <div className="container mx-auto max-w-4xl">
-          <form onSubmit={handleSendMessage} className="flex space-x-2">
-            <Input
+          <form onSubmit={handleSendMessage} className="flex space-x-5">
+            <Textarea
+              ref={textareaRef}
               value={input}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInput(e.target.value)}
+              onChange={handleInputChange}
               placeholder="메시지를 입력하세요..."
-              className="flex-1 bg-gray-900/60 border-gray-700 text-white"
+              className="flex-1 bg-gray-900/60 border-gray-700 text-white min-h-[40px] max-h-[150px] resize-none py-2 px-3"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault()
+                  handleSendMessage(e)
+                }
+              }}
             />
             <Button
               type="submit"
-              className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700"
+              className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 self-end h-10"
             >
               <Send className="h-5 w-5" />
             </Button>
