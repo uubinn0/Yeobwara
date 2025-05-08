@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Link, useNavigate } from "react-router-dom"
 import { Rocket } from "lucide-react"
 import api from "../../api/api"
+import axios from 'axios'
 
 export default function LoginPage() {
   const [username, setUsername] = useState("")
@@ -16,8 +17,10 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      const response = await api.post(
-        '/users/login',
+      // const response = await api.post(
+      //   '/users/login',
+      const response = await axios.post(
+        'https://k12b107.p.ssafy.io/api/users/login',
         new URLSearchParams({
           username,
           password,
