@@ -39,6 +39,7 @@ services:
     build:
       context: ./frontend/react
       dockerfile: Dockerfile
+    container_name: react
     ports:
       - "5173:5173" # Vite dev server 기본 포트
     environment:
@@ -50,6 +51,7 @@ services:
     build:
       context: ./nginx
       dockerfile: Dockerfile
+    container_name: nginx
     depends_on:
       - fastapi
     ports:
