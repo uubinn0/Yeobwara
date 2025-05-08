@@ -1,4 +1,4 @@
-import os, httpx, openai, json
+import os
 from fastapi import FastAPI, HTTPException
 from agents import Agent, Runner
 from agents.mcp.server import MCPServerStdio
@@ -25,6 +25,24 @@ try:
     openai.base_url = GMS_API_BASE      # openai ≥ 1.0
 except AttributeError:
     openai.api_base = GMS_API_BASE      # openai 0.x 대응
+
+
+# *************  ← 추가 START
+# openai >=1.16 에서 responses.create → chat.completions.create 로 우회
+from types import MethodType
+import openai
+
+async def _responses_proxy(self, **kwargs):
+    return await openai.chat.completions.create(**kwargs)
+
+try:
+    openai.resources.responses.responses.Responses.create = MethodType(
+        _responses_proxy, openai.resources.responses
+    )
+except AttributeError:
+    pass  # <1.16 이면 해당 속성이 없음
+# *************  ← 추가 END
+
 
 # 3) /models 호출을 목업해 초기화 400 방지
 def _dummy_models_list(*args, **kwargs):

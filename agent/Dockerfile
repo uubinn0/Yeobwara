@@ -16,14 +16,10 @@ RUN npm install -g @suekou/mcp-notion-server
 RUN npm install -g @modelcontextprotocol/server-github
 RUN npm install -g @modelcontextprotocol/server-gitlab
 
-
+# Python 패키지 설치
 RUN uv pip install --system \
-    fastapi \
-    "uvicorn[standard]" \
-    openai-agents
+    fastapi uvicorn[standard] openai-agents openai
 
-# 2) openai 버전을 1.15.x(≤1.15.0)로 강제 다운그레이드
-RUN uv pip install --system --no-deps "openai==1.15.0"
 
 # 앱 복사
 COPY app/ ./app/
