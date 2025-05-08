@@ -16,10 +16,9 @@ RUN npm install -g @suekou/mcp-notion-server
 RUN npm install -g @modelcontextprotocol/server-github
 RUN npm install -g @modelcontextprotocol/server-gitlab
 
-# Python 패키지 설치
-RUN uv pip install --system \
-    fastapi uvicorn[standard] openai-agents openai
 
+RUN uv pip install --system \
+  fastapi "uvicorn[standard]" "openai>=1.14,<1.16" openai-agents
 
 # 앱 복사
 COPY app/ ./app/
