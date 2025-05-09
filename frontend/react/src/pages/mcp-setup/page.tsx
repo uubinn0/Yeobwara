@@ -14,7 +14,7 @@ import { useNavigate } from "react-router-dom"
 import { Save, X, ArrowLeft, Loader2 } from "lucide-react"
 import "@/styles/globals.css"
 import ServiceIcon from "@/components/ServiceIcon"
-import { fetchMcpServices, saveMcpServiceSettings } from "@/api/mcpService"
+import { fetchMcpServices, saveMcpServiceSettings, toggleMcpSelection, createPod, fetchEnvironmentVariables } from "@/api/mcpService"
 import { McpService, McpServiceResponse } from "@/types/mcp"
 
 export default function McpSetupPage() {
@@ -39,6 +39,9 @@ export default function McpSetupPage() {
           throw new Error("서비스 데이터를 불러오지 못했습니다.")
         }
         
+        // API에서 저장된 환경변수 가져오기
+        const savedEnvironmentVars = await fetchEnvironmentVariables();
+        
         // 로컬스토리지에서 저장된 사용자 설정 불러오기
         const savedUserSettings = localStorage.getItem("mcpServices")
         const userSettings = savedUserSettings ? JSON.parse(savedUserSettings) : []
@@ -49,16 +52,29 @@ export default function McpSetupPage() {
             userSettings.find((s: McpService) => s.id === service.public_id) : 
             undefined
           
+          // 서버에서 가져온 환경변수
+          const savedEnvVarsFromServer = savedEnvironmentVars[service.public_id] || {};
+          
+          // 환경변수가 없는 경우 기본적으로 활성화 상태로 설정
+          const hasNoEnvVars = service.required_env_vars.length === 0;
+          
           return {
             id: service.public_id,
             name: service.name,
             icon: service.mcp_type, // mcp_type을 icon으로 사용
-            active: savedService ? savedService.active : false,
+            active: savedService ? savedService.active : hasNoEnvVars, // 환경변수가 없으면 기본 활성화
+            is_selected: service.is_selected,
             required_env_vars: service.required_env_vars.map((key: string) => {
+              // 우선순위: 1. 서버에서 가져온 환경변수, 2. 로컬 스토리지에 저장된 환경변수, 3. 빈 문자열
+              const serverValue = savedEnvVarsFromServer[key];
               const savedValue = savedService ? 
                 savedService.required_env_vars?.find((sev: {key: string, value: string}) => sev.key === key)?.value : 
-                ""
-              return { key, value: savedValue || "" }
+                undefined;
+              
+              return { 
+                key, 
+                value: serverValue || savedValue || "" 
+              };
             })
           }
         })
@@ -76,12 +92,83 @@ export default function McpSetupPage() {
     getMcpServices()
   }, [])
 
-  const openServiceDialog = (service: McpService) => {
-    setSelectedService(service)
-    setIsDialogOpen(true)
-  }
+  const openServiceDialog = async (service: McpService) => {
+    // 환경변수가 없는 경우 모달을 열지 않음
+    if (service.required_env_vars.length === 0) {
+      // 카드를 클릭한 경우 선택 상태 토글
+      handleToggleSelection(null, service);
+      return;
+    }
+    
+    try {
+      // 서비스 모달 열기 전에 최신 환경변수 조회
+      const savedEnvironmentVars = await fetchEnvironmentVariables();
+      const serverEnvVars = savedEnvironmentVars[service.id] || {};
+      
+      // 서버의 최신 환경변수로 업데이트
+      const updatedService = {
+        ...service,
+        required_env_vars: service.required_env_vars.map((env: { key: string; value: string }) => ({
+          key: env.key,
+          value: serverEnvVars[env.key] || env.value
+        }))
+      };
+      
+      setSelectedService(updatedService);
+      setIsDialogOpen(true);
+    } catch (error) {
+      console.error("환경변수 불러오기 실패:", error);
+      // 오류 발생해도 모달은 열어줌 (기존 데이터 사용)
+      setSelectedService(service);
+      setIsDialogOpen(true);
+    }
+  };
 
-  const handleSaveEnvVars = () => {
+  // 서비스 선택 상태 변경
+  const handleToggleSelection = async (e: React.MouseEvent | null, service: McpService) => {
+    // 이벤트 전파 중지 (openServiceDialog가 호출되지 않도록) - 이벤트가 있는 경우만
+    if (e) {
+      e.stopPropagation();
+    }
+    
+    // 환경변수가 없는 경우 항상 선택 가능
+    const hasNoEnvVars = service.required_env_vars.length === 0;
+    
+    // 환경변수가 모두 입력되었는지 확인
+    const hasAllEnvVars = service.required_env_vars.every((env: { key: string; value: string }) => env.value.trim() !== "");
+    
+    // 선택 해제하는 경우는 항상 가능, 선택하는 경우는 환경변수 검사 (환경변수가 없는 경우는 예외)
+    if (!service.is_selected && !hasAllEnvVars && !hasNoEnvVars) {
+      alert("서비스를 선택하기 전에 모든 환경변수를 입력해주세요.");
+      // 모달 열기
+      openServiceDialog(service);
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      
+      // 토글 API 호출 - 현재 선택 상태를 전달하여 자동으로 처리
+      const newSelectedState = await toggleMcpSelection(service.id, service.is_selected);
+      
+      // 서비스 목록 업데이트
+      const updatedServices = services.map(s => 
+        s.id === service.id ? { ...s, is_selected: newSelectedState } : s
+      );
+      
+      setServices(updatedServices);
+      
+      // 로컬 스토리지에도 저장
+      localStorage.setItem("mcpServices", JSON.stringify(updatedServices));
+    } catch (err) {
+      console.error("MCP 선택 상태 변경 실패:", err);
+      alert("서비스 선택 상태 변경에 실패했습니다.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveEnvVars = async () => {
     if (!selectedService) return
 
     // 모든 환경변수가 입력되었는지 확인
@@ -94,11 +181,41 @@ export default function McpSetupPage() {
       return;
     }
 
-    setServices(
-      services.map((service) => (service.id === selectedService.id ? { ...selectedService, active: true } : service)),
-    )
-
-    setIsDialogOpen(false)
+    // 서비스 활성화 상태로 업데이트
+    const updatedService = { ...selectedService, active: true };
+    
+    // 전체 서비스 목록 업데이트
+    const updatedServices = services.map((service) => 
+      service.id === updatedService.id ? updatedService : service
+    );
+    
+    try {
+      setLoading(true);
+      
+      // API를 통해 환경변수 저장 (활성화된 서비스만 저장됨)
+      await saveMcpServiceSettings([updatedService]);
+      
+      // 로컬 스토리지에도 저장
+      localStorage.setItem("mcpServices", JSON.stringify(updatedServices));
+      
+      // 상태 업데이트
+      setServices(updatedServices);
+      
+      alert(`${updatedService.name} 서비스 설정이 저장되었습니다.`);
+    } catch (err) {
+      console.error("환경변수 설정 저장 실패:", err);
+      
+      // API 저장 실패해도 UI에는 반영
+      setServices(updatedServices);
+      
+      // 실패해도 로컬에는 저장
+      localStorage.setItem("mcpServices", JSON.stringify(updatedServices));
+      
+      alert(`서버 저장에 실패했지만 설정은 적용되었습니다.`);
+    } finally {
+      setLoading(false);
+      setIsDialogOpen(false);
+    }
   }
 
   const handleEnvVarChange = (index: number, value: string) => {
@@ -126,19 +243,36 @@ export default function McpSetupPage() {
       alert(`다음 서비스의 모든 환경변수를 입력해주세요: ${serviceNames}`);
       return;
     }
+    
+    // 선택된 서비스가 있는지 확인
+    const hasSelectedService = services.some(service => service.is_selected);
+    
+    if (!hasSelectedService) {
+      alert("최소한 하나의 MCP 서비스를 선택해주세요.");
+      return;
+    }
 
     try {
-      // API를 통해 서비스 설정 저장
-      await saveMcpServiceSettings(services)
+      setLoading(true);
       
-      // 로컬 스토리지에도 저장
-      localStorage.setItem("mcpServices", JSON.stringify(services))
-      navigate("/chat")
+      // POD 생성 API 호출 - 선택된 MCP 서비스로 POD 생성
+      await createPod();
+      
+      // 로컬 스토리지에 저장
+      localStorage.setItem("mcpServices", JSON.stringify(services));
+      
+      // 채팅 페이지로 이동
+      navigate("/chat");
     } catch (err) {
-      console.error("MCP 서비스 설정 저장 실패:", err)
+      console.error("POD 생성 실패:", err);
+      
       // 실패해도 로컬에는 저장
-      localStorage.setItem("mcpServices", JSON.stringify(services))
-      navigate("/chat")
+      localStorage.setItem("mcpServices", JSON.stringify(services));
+      
+      // 오류 메시지 표시
+      alert("POD 생성에 실패했습니다. 다시 시도해주세요.");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -184,16 +318,50 @@ export default function McpSetupPage() {
                     onClick={() => openServiceDialog(service)}
                     className={`
                       flex flex-col items-center justify-center p-4 rounded-lg border border-gray-700 
-                      cursor-pointer transition-all duration-200 hover:border-gray-500
-                      ${service.active ? "bg-gray-800/50" : "bg-gray-900/30"}
+                      cursor-pointer transition-all duration-200 hover:border-gray-500 relative
+                      ${service.is_selected 
+                        ? "bg-gray-800/40 border-purple-500" 
+                        : (service.active || service.required_env_vars.length === 0)
+                          ? "bg-gray-800/40" 
+                          : "bg-gray-900/30"}
                     `}
                   >
-                    <div
-                      className={`w-16 h-16 flex items-center justify-center rounded-full mb-3 ${service.active ? "bg-gradient-to-r from-indigo-500 to-purple-600" : "bg-gray-800"}`}
+                    {/* 선택 토글 스위치 */}
+                    <div 
+                      className="absolute top-2 right-2 cursor-pointer"
+                      onClick={(e) => handleToggleSelection(e, service)}
                     >
-                      <ServiceIcon name={service.icon} active={service.active} />
+                      <div className={`
+                        w-10 h-5 rounded-full transition-all duration-200 flex items-center px-0.5
+                        ${service.is_selected 
+                          ? "bg-gradient-to-r from-indigo-500 to-purple-600" 
+                          : "bg-gray-600"}
+                      `}>
+                        <div className={`
+                          w-4 h-4 bg-white rounded-full shadow-md transform transition-transform duration-200
+                          ${service.is_selected ? "translate-x-5" : ""}
+                        `}></div>
+                      </div>
                     </div>
-                    <span className={`text-sm font-medium ${service.active ? "text-white" : "text-gray-400"}`}>
+                    
+                    <div
+                      className={`w-16 h-16 flex items-center justify-center rounded-full mb-3 ${
+                        service.is_selected 
+                          ? "bg-gradient-to-r from-indigo-500 to-purple-600" 
+                          : (service.active || service.required_env_vars.length === 0)
+                            ? "bg-gray-700" 
+                            : "bg-gray-800"
+                      }`}
+                    >
+                      <ServiceIcon name={service.icon} active={service.is_selected || service.active || service.required_env_vars.length === 0} />
+                    </div>
+                    <span className={`text-sm font-medium ${
+                      service.is_selected 
+                        ? "text-white" 
+                        : (service.active || service.required_env_vars.length === 0)
+                          ? "text-gray-200" 
+                          : "text-gray-400"
+                    }`}>
                       {service.name}
                     </span>
                   </div>
@@ -207,8 +375,17 @@ export default function McpSetupPage() {
                 className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700"
                 disabled={loading}
               >
-                <Save className="mr-2 h-4 w-4" />
-                저장하고 계속하기
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    처리 중...
+                  </>
+                ) : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" />
+                    저장하고 계속하기
+                  </>
+                )}
               </Button>
             </div>
           </CardContent>
