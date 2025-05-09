@@ -17,7 +17,7 @@ provider "google" {
 
 # ───── VPC 방화벽 (클러스터 포트) ─────
 resource "google_compute_firewall" "k8s_ports" {
-  name    = "k8s-cluster-ports"
+  name    = "k8s-cluster-ports-new"
   network = "default"
 
   allow {
@@ -29,7 +29,7 @@ resource "google_compute_firewall" "k8s_ports" {
     ports    = ["8472", "4789"]
   }
   target_tags = ["k8s-node"]
-  source_ranges = ["10.178.0.0/20"]
+  source_ranges = ["172.26.0.0/16"]
 }
 
 # ───── 워커 노드 ─────
@@ -55,16 +55,15 @@ resource "google_compute_instance" "k8s_worker" {
     #!/bin/bash
     set -euxo pipefail
 
-    ## 기본 시스템
+    # 1) 시스템 기본 설정
     swapoff -a
     sed -i '/ swap / s/^/#/' /etc/fstab
-
     apt-get update -y
     apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release
 
-    ## containerd
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg |
-      gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+    # 2) containerd 설치
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
+      | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
     echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] \
       https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" \
       > /etc/apt/sources.list.d/docker.list
@@ -74,17 +73,17 @@ resource "google_compute_instance" "k8s_worker" {
     sed -i 's/SystemdCgroup = false/SystemdCgroup = true/' /etc/containerd/config.toml
     systemctl enable --now containerd
 
-    ## 커널 파라미터
+    # 3) 커널 파라미터
     modprobe overlay
     modprobe br_netfilter
-    cat <<EOF >/etc/sysctl.d/k8s.conf
-    net.bridge.bridge-nf-call-iptables=1
-    net.bridge.bridge-nf-call-ip6tables=1
-    net.ipv4.ip_forward=1
-    EOF
+    cat <<SYSCTL >/etc/sysctl.d/k8s.conf
+    net.bridge.bridge-nf-call-iptables  = 1
+    net.bridge.bridge-nf-call-ip6tables = 1
+    net.ipv4.ip_forward                 = 1
+    SYSCTL
     sysctl --system
 
-    ## Kubernetes v1.29.x
+    # 4) Kubernetes 1.29 설치
     mkdir -p /etc/apt/keyrings
     curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key \
       | gpg --dearmor -o /etc/apt/keyrings/kubernetes-archive-keyring.gpg
@@ -92,12 +91,11 @@ resource "google_compute_instance" "k8s_worker" {
       https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /" \
       > /etc/apt/sources.list.d/kubernetes.list
     apt-get update -y
-    apt-get install -y kubelet=1.29.*-1.1 \
-                       kubeadm=1.29.*-1.1 \
-                       kubectl=1.29.*-1.1
+    apt-get install -y kubelet=1.29.*-1.1 kubeadm=1.29.*-1.1 kubectl=1.29.*-1.1
     apt-mark hold kubelet kubeadm kubectl
     systemctl enable --now kubelet
-    # 클러스터에 워커 노드 조인
+
+    # 5) 워커 노드 조인
     ${var.join_command}
   EOT
 

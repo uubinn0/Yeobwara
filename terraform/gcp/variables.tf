@@ -25,4 +25,5 @@ variable "ssh_pub" {
 variable "join_command" {
   description = "kubeadm join 명령어"
   type        = string
+  default     = "kubeadm join k12b107.p.ssafy.io:6443 --token 2649av.fegkl8o3h46gccoq --discovery-token-ca-cert-hash sha256:42577587792472850a6f1511c81480b06d14803b3d78322c853d44edd0b9ef4c"
 }
