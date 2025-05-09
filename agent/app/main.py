@@ -49,15 +49,27 @@ GMS_API_BASE = os.getenv("GMS_API_BASE")
 if not GMS_KEY:
     raise RuntimeError("OPENAI_API_KEY 환경 변수가 설정되지 않았습니다.")
 
-# ******** override default openai library to point at GMS ********
+#########################################################################
+
+# openai.api_key  = GMS_KEY
+# openai.api_base = GMS_API_BASE
+# # os.environ["OPENAI_API_KEY"] = GMS_KEY
+# custom_client = AsyncOpenAI(
+#     base_url=GMS_API_BASE,
+#     api_key=GMS_KEY
+# )
+
+# ******** API_BASE에 /v1이 포함되어 있으면 제거해서 정상화 ********
+normalized_base = GMS_API_BASE.removesuffix("/v1")
 openai.api_key  = GMS_KEY
-openai.api_base = GMS_API_BASE
-# ********
-# os.environ["OPENAI_API_KEY"] = GMS_KEY
+openai.api_base = normalized_base
 custom_client = AsyncOpenAI(
-    base_url=GMS_API_BASE,
+    base_url=normalized_base,
     api_key=GMS_KEY
 )
+
+#########################################################################
+
 set_default_openai_client(custom_client)
 
 # MCP 서버들 설정 ( 어떤 github 을 npx 로 띄울건지 )
