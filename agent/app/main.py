@@ -137,7 +137,6 @@ from agents import Agent, Runner, set_default_openai_client, set_tracing_disable
 from agents.mcp.server import MCPServerStdio
 from openai import AsyncOpenAI
 import openai
-from agents.models.openai_chat_completions import OpenAIChatCompletionsModel  # ********
 
 app = FastAPI()
 
@@ -207,7 +206,7 @@ async def startup_event():
     agent = Agent(
         name="Assistant",
         instructions="Use the tools to achieve the task",
-        model=OpenAIChatCompletionsModel(client=custom_client, model="gpt-4.1"),  # ********
+        model="gpt-4.1",
         mcp_servers=servers
     )
     # ********
