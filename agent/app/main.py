@@ -159,7 +159,7 @@ custom_client = AsyncOpenAI(
 set_default_openai_client(custom_client)
 
 # ******** Disable tracing to avoid falling back to official OpenAI API ********
-set_tracing_disabled()  # ********
+set_tracing_disabled(disabled=True)  # ********
 
 # MCP 서버들 설정 (어떤 github 을 stdio로 띄울 것인지)
 MCP_SERVER_CONFIG = {
