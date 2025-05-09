@@ -1,229 +1,117 @@
-# ###########################################################################################
-# """
-# >> AI AGENT 입력 텍스트 예시
-# curl -X POST http://localhost:8001/agent-query   -H "Content-Type: application/json"   --data @- <<EOF
-# {"text": "GitHub의 test-repo 저장소의 master 브랜치에 README.md 파일을 만들어줘. 내용은 '테스트 중입니다'로 해줘."}
-# EOF
+    ###########################################################################################
+    """
+    >> AI AGENT 입력 텍스트 예시
+    curl -X POST http://localhost:8001/agent-query   -H "Content-Type: application/json"   --data @- <<EOF
+    {"text": "GitHub의 test-repo 저장소의 master 브랜치에 README.md 파일을 만들어줘. 내용은 '테스트 중입니다'로 해줘."}
+    EOF
 
-# curl -X POST http://localhost:8001/agent-query   -H "Content-Type: application/json"   --data @- <<EOF
-# {"text": "연결되어있는 내 notion 페이지 ( 페이지명 : mcp ) 에 '안녕하세요' 라는 문구 추가해줘. "}
-# EOF
+    curl -X POST http://localhost:8001/agent-query   -H "Content-Type: application/json"   --data @- <<EOF
+    {"text": "연결되어있는 내 notion 페이지 ( 페이지명 : mcp ) 에 '안녕하세요' 라는 문구 추가해줘. "}
+    EOF
 
-# >> 고려사항
-# - OUTPUT 으로 Internal Server Error 나왔을 경우 사용자에게 에러 어떤 식으로 전달? 챗봇 형식이라면 BE를 어떤 식으로 구성? 
-# - fastapi > ai agent 로 로그인할 때에 꺼져있는 컨테이너 키고 기존 유저의 문맥 메모리 / 환경변수 / 사용할 mcp 리스트 줘야 하는데, 어떤 식으로 주고받을지? 
-# - 모델 선택 가능한것도 만들면 좋을듯? 이건 기획때 BM 따라서 나뉘는데 구독형이면 그냥 박아놔도 괜찮고 / 사용자 API 토큰 쓰게할거면 선택 필수 
+    >> 고려사항
+    - OUTPUT 으로 Internal Server Error 나왔을 경우 사용자에게 에러 어떤 식으로 전달? 챗봇 형식이라면 BE를 어떤 식으로 구성? 
+    - fastapi > ai agent 로 로그인할 때에 꺼져있는 컨테이너 키고 기존 유저의 문맥 메모리 / 환경변수 / 사용할 mcp 리스트 줘야 하는데, 어떤 식으로 주고받을지? 
+    - 모델 선택 가능한것도 만들면 좋을듯? 이건 기획때 BM 따라서 나뉘는데 구독형이면 그냥 박아놔도 괜찮고 / 사용자 API 토큰 쓰게할거면 선택 필수 
 
-# >> MCP 서버별 가능 기능
-# ##### github ##### 
-# - 토큰 발급 : github.com/settings/tokens > Generate New Token > classic > 이름 / 기한 / 권한 설정 > 생성
+    >> MCP 서버별 가능 기능
+    ##### github ##### 
+    - 토큰 발급 : github.com/settings/tokens > Generate New Token > classic > 이름 / 기한 / 권한 설정 > 생성
 
-# - [O] repo 생성
-# - [X] 생성된 repo 에 파일 추가 ( init ) : github REST API 설계상 불가하다고...
+    - [O] repo 생성
+    - [X] 생성된 repo 에 파일 추가 ( init ) : github REST API 설계상 불가하다고...
 
-# ##### notion #####
-# - [*] 토큰 발급 : 본인 노션 우측 상단 ``` > 연결 > 연결 관리 > API 연결 개발 또는 관리 > 새 API 통합 > 이름 / 사용할 워크스페이스 / 프라이빗 > 저장 > API 통합 설정 구성 > 기능 설정
-# - [*] 페이지 연동 : 연동하고 싶은 페이지 > ``` > 연결 > '연결 검색' 창에 본인이 설정한 API 이름 입력 > 선택 
-# - [O] 해당 페이지에 내용 입력하기 
-# - [X] 연동 페이지 이외의 페이지 
-
-
-# ##### gitlab #####
-# - [*] 토큰 발급 : 본인 노션 우측 상단 ``` > 연결 > 연결 관리 > API 연결 개발 또는 관리 > 새 API 통합 > 이름 / 사용할 워크스페이스 / 프라이빗 > 저장 > API 통합 설정 구성 > 기능 설정
-# - [*] 개인 네임스페이스 ID 를 확인해야 함. curl --header "PRIVATE-TOKEN: @@@" https://lab.ssafy.com/api/v4/namespaces 을 이용해서 ID 알아오고 
-# - [O] 해당 페이지에 내용 입력하기 
-# - [X] 연동 페이지 이외의 페이지 
-# """
-# ###########################################################################################
-# import os
-# from fastapi import FastAPI, HTTPException
-# from agents import Agent, Runner, set_default_openai_client
-# from agents.mcp.server import MCPServerStdio
-# from openai import AsyncOpenAI
-# import openai
-
-# app = FastAPI()
-
-# GMS_KEY = os.getenv("GMS_KEY")
-# GMS_API_BASE = os.getenv("GMS_API_BASE")
-# if not GMS_KEY:
-#     raise RuntimeError("OPENAI_API_KEY 환경 변수가 설정되지 않았습니다.")
-
-# #########################################################################
-
-# openai.api_key  = GMS_KEY
-# openai.api_base = GMS_API_BASE
-# # os.environ["OPENAI_API_KEY"] = GMS_KEY
-# custom_client = AsyncOpenAI(
-#     base_url=GMS_API_BASE,
-#     api_key=GMS_KEY
-# )
-
-# #########################################################################
-
-# set_default_openai_client(custom_client)
-
-# # MCP 서버들 설정 ( 어떤 github 을 npx 로 띄울건지 )
-# MCP_SERVER_CONFIG = {
-#     "github": {
-#         "type": "stdio",
-#         "params": {"command": "mcp-github-server", "args": [], "env": {"GITHUB_PERSONAL_ACCESS_TOKEN": os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN", "")}}
-#         # "params": {"command": "npx", "args": ["-y", "@modelcontextprotocol/server-github"], "env": {"GITHUB_PERSONAL_ACCESS_TOKEN": os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN", "")}}
-#     },
-#     "notion": {
-#         "type": "stdio",
-#         "params": {"command": "mcp-notion-server", "args": [], "env": {"NOTION_API_TOKEN": os.getenv("NOTION_API_TOKEN", "")}}
-#         # "params": {"command": "npx", "args": ["-y", "@suekou/mcp-notion-server"], "env": {"NOTION_API_TOKEN": os.getenv("NOTION_API_TOKEN", "")}}
-#     },
-#     "gitlab": {
-#         "type": "stdio",
-#         "params": {"command": "mcp-gitlab-server", "args": [], "env": {"GITLAB_PERSONAL_ACCESS_TOKEN": os.getenv("GITLAB_PERSONAL_ACCESS_TOKEN", ""), "GITLAB_API_URL": os.getenv("GITLAB_API_URL", "")}}
-#         # "params": {"command": "npx", "args": ["-y", "@modelcontextprotocol/server-gitlab"], "env": {"GITLAB_PERSONAL_ACCESS_TOKEN": os.getenv("GITLAB_PERSONAL_ACCESS_TOKEN", ""), "GITLAB_API_URL": os.getenv("GITLAB_API_URL", "")}}
-#     },
-#     "duckduckgo-search": {
-#         "type": "stdio",
-#         "params": { "command": "duckduckgo-mcp-server", "args": [], "env": {}}
-#     },
-#     "korean-spell-checker": {
-#         "type": "stdio",
-#         "params": { "command": "mcp-korean-spell", "args": [], "env": {}}
-#     },
-# }
-
-# # 환경변수 MCP_SERVICES 기반으로 사용할 서비스만 필터링
-# services_env = os.getenv("MCP_SERVICES", "")
-# if services_env:
-#     allowed = [s.strip() for s in services_env.split(",") if s.strip()]
-#     MCP_SERVER_CONFIG = {k: v for k, v in MCP_SERVER_CONFIG.items() if k in allowed}
-
-# agent: Agent | None = None
-# servers: list[MCPServerStdio] = []
-
-# # 앱 시작 시 필요한 서버만 연결하고 Agent 초기화
-# @app.on_event("startup")
-# async def startup_event():
-#     global agent, servers
-#     for name, cfg in MCP_SERVER_CONFIG.items():
-#         srv = MCPServerStdio(params=cfg["params"], cache_tools_list=True, name=name)
-#         await srv.connect()
-#         servers.append(srv)
-#     agent = Agent(
-#         name="Assistant",
-#         instructions="Use the tools to achieve the task",
-#         # model="gpt-4.1-mini",
-#         model="gpt-4.1",
-#         mcp_servers=servers
-#     )
-
-# # 앱 종료 시 모든 서버 정리
-# @app.on_event("shutdown")
-# async def shutdown_event():
-#     for srv in servers:
-#         await srv.cleanup()
-
-# # 메시지 처리 핸들러: 단순히 global agent 사용
-# @app.post("/agent-query")
-# async def query_agent(payload: dict):
-#     if agent is None: raise HTTPException(503, "Agent가 초기화되지 않았습니다.")
-#     text = payload.get("text")
-#     if not text: raise HTTPException(400, "'text' 필드가 필요합니다.")
-#     result = await Runner.run(agent, text)
-#     return {"response": result.final_output}
+    ##### notion #####
+    - [*] 토큰 발급 : 본인 노션 우측 상단 ``` > 연결 > 연결 관리 > API 연결 개발 또는 관리 > 새 API 통합 > 이름 / 사용할 워크스페이스 / 프라이빗 > 저장 > API 통합 설정 구성 > 기능 설정
+    - [*] 페이지 연동 : 연동하고 싶은 페이지 > ``` > 연결 > '연결 검색' 창에 본인이 설정한 API 이름 입력 > 선택 
+    - [O] 해당 페이지에 내용 입력하기 
+    - [X] 연동 페이지 이외의 페이지 
 
 
-import os
-from fastapi import FastAPI, HTTPException
-from agents import Agent, Runner, set_default_openai_client, set_tracing_disabled  # ********
-from agents.mcp.server import MCPServerStdio
-from openai import AsyncOpenAI
-import openai
+    ##### gitlab #####
+    - [*] 토큰 발급 : 본인 노션 우측 상단 ``` > 연결 > 연결 관리 > API 연결 개발 또는 관리 > 새 API 통합 > 이름 / 사용할 워크스페이스 / 프라이빗 > 저장 > API 통합 설정 구성 > 기능 설정
+    - [*] 개인 네임스페이스 ID 를 확인해야 함. curl --header "PRIVATE-TOKEN: @@@" https://lab.ssafy.com/api/v4/namespaces 을 이용해서 ID 알아오고 
+    - [O] 해당 페이지에 내용 입력하기 
+    - [X] 연동 페이지 이외의 페이지 
+    """
+    ###########################################################################################
+    import os
+    from fastapi import FastAPI, HTTPException
+    from agents import Agent, Runner, set_default_openai_client
+    from agents.mcp.server import MCPServerStdio
+    from openai import AsyncOpenAI
 
-app = FastAPI()
+    app = FastAPI()
 
-GMS_KEY      = os.getenv("GMS_KEY")
-GMS_API_BASE = os.getenv("GMS_API_BASE")
-if not GMS_KEY:
-    raise RuntimeError("OPENAI_API_KEY 환경 변수가 설정되지 않았습니다.")
+    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+    if not OPENAI_API_KEY:
+        raise RuntimeError("OPENAI_API_KEY 환경 변수가 설정되지 않았습니다.")
+    os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
 
-# ******** Override OpenAI library to point at GMS proxy ********
-# Normalize base by removing trailing '/v1' if present
-openai.api_key  = GMS_KEY
-openai.api_base = GMS_API_BASE
-# ********
+    # MCP 서버들 설정 ( 어떤 github 을 npx 로 띄울건지 )
+    MCP_SERVER_CONFIG = {
+        "github": {
+            "type": "stdio",
+            "params": {"command": "mcp-github-server", "args": [], "env": {"GITHUB_PERSONAL_ACCESS_TOKEN": os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN", "")}}
+            # "params": {"command": "npx", "args": ["-y", "@modelcontextprotocol/server-github"], "env": {"GITHUB_PERSONAL_ACCESS_TOKEN": os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN", "")}}
+        },
+        "notion": {
+            "type": "stdio",
+            "params": {"command": "mcp-notion-server", "args": [], "env": {"NOTION_API_TOKEN": os.getenv("NOTION_API_TOKEN", "")}}
+            # "params": {"command": "npx", "args": ["-y", "@suekou/mcp-notion-server"], "env": {"NOTION_API_TOKEN": os.getenv("NOTION_API_TOKEN", "")}}
+        },
+        "gitlab": {
+            "type": "stdio",
+            "params": {"command": "mcp-gitlab-server", "args": [], "env": {"GITLAB_PERSONAL_ACCESS_TOKEN": os.getenv("GITLAB_PERSONAL_ACCESS_TOKEN", ""), "GITLAB_API_URL": os.getenv("GITLAB_API_URL", "")}}
+            # "params": {"command": "npx", "args": ["-y", "@modelcontextprotocol/server-gitlab"], "env": {"GITLAB_PERSONAL_ACCESS_TOKEN": os.getenv("GITLAB_PERSONAL_ACCESS_TOKEN", ""), "GITLAB_API_URL": os.getenv("GITLAB_API_URL", "")}}
+        },
+        "duckduckgo-search": {
+            "type": "stdio",
+            "params": { "command": "duckduckgo-mcp-server", "args": [], "env": {}}
+        },
+        "korean-spell-checker": {
+            "type": "stdio",
+            "params": { "command": "mcp-korean-spell", "args": [], "env": {}}
+        },
+    }
 
-# Create custom Async client pointing at GMS
-custom_client = AsyncOpenAI(
-    base_url=GMS_API_BASE,
-    api_key=GMS_KEY
-)
-set_default_openai_client(custom_client)
+    # 환경변수 MCP_SERVICES 기반으로 사용할 서비스만 필터링
+    services_env = os.getenv("MCP_SERVICES", "")
+    if services_env:
+        allowed = [s.strip() for s in services_env.split(",") if s.strip()]
+        MCP_SERVER_CONFIG = {k: v for k, v in MCP_SERVER_CONFIG.items() if k in allowed}
 
-# ******** Disable tracing to avoid falling back to official OpenAI API ********
-set_tracing_disabled(disabled=True)  # ********
+    agent: Agent | None = None
+    servers: list[MCPServerStdio] = []
 
-# MCP 서버들 설정 (어떤 github 을 stdio로 띄울 것인지)
-MCP_SERVER_CONFIG = {
-    "github": {
-        "type": "stdio",
-        "params": {"command": "mcp-github-server", "args": [], "env": {"GITHUB_PERSONAL_ACCESS_TOKEN": os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN", "")}}
-    },
-    "notion": {
-        "type": "stdio",
-        "params": {"command": "mcp-notion-server", "args": [], "env": {"NOTION_API_TOKEN": os.getenv("NOTION_API_TOKEN", "")}}
-    },
-    "gitlab": {
-        "type": "stdio",
-        "params": {"command": "mcp-gitlab-server", "args": [], "env": {"GITLAB_PERSONAL_ACCESS_TOKEN": os.getenv("GITLAB_PERSONAL_ACCESS_TOKEN", ""), "GITLAB_API_URL": os.getenv("GITLAB_API_URL", "")}}
-    },
-    "duckduckgo-search": {
-        "type": "stdio",
-        "params": {"command": "duckduckgo-mcp-server", "args": [], "env": {}}
-    },
-    "korean-spell-checker": {
-        "type": "stdio",
-        "params": {"command": "mcp-korean-spell", "args": [], "env": {}}
-    },
-}
+    # 앱 시작 시 필요한 서버만 연결하고 Agent 초기화
+    @app.on_event("startup")
+    async def startup_event():
+        global agent, servers
+        for name, cfg in MCP_SERVER_CONFIG.items():
+            srv = MCPServerStdio(params=cfg["params"], cache_tools_list=True, name=name)
+            await srv.connect()
+            servers.append(srv)
+        agent = Agent(
+            name="Assistant",
+            instructions="Use the tools to achieve the task",
+            # model="gpt-4.1-mini",
+            model="gpt-4.1",
+            mcp_servers=servers
+        )
 
-# 환경변수 MCP_SERVICES 기반으로 사용할 서비스만 필터링
-services_env = os.getenv("MCP_SERVICES", "")
-if services_env:
-    allowed = [s.strip() for s in services_env.split(",") if s.strip()]
-    MCP_SERVER_CONFIG = {k: v for k, v in MCP_SERVER_CONFIG.items() if k in allowed}
+    # 앱 종료 시 모든 서버 정리
+    @app.on_event("shutdown")
+    async def shutdown_event():
+        for srv in servers:
+            await srv.cleanup()
 
-agent: Agent | None = None
-servers: list[MCPServerStdio] = []
+    # 메시지 처리 핸들러: 단순히 global agent 사용
+    @app.post("/agent-query")
+    async def query_agent(payload: dict):
+        if agent is None: raise HTTPException(503, "Agent가 초기화되지 않았습니다.")
+        text = payload.get("text")
+        if not text: raise HTTPException(400, "'text' 필드가 필요합니다.")
+        result = await Runner.run(agent, text)
+        return {"response": result.final_output}
 
-# 앱 시작 시 필요한 서버만 연결하고 Agent 초기화
-@app.on_event("startup")
-async def startup_event():
-    global agent, servers
-    for name, cfg in MCP_SERVER_CONFIG.items():
-        srv = MCPServerStdio(params=cfg["params"], cache_tools_list=True, name=name)
-        await srv.connect()
-        servers.append(srv)
-    # ******** Initialize Agent with Chat Completions model instead of Responses ********
-    agent = Agent(
-        name="Assistant",
-        instructions="Use the tools to achieve the task",
-        model="gpt-4.1",
-        mcp_servers=servers
-    )
-    # ********
-
-# 앱 종료 시 모든 서버 정리
-@app.on_event("shutdown")
-async def shutdown_event():
-    for srv in servers:
-        await srv.cleanup()
-
-# 메시지 처리 핸들러: 단순히 global agent 사용
-@app.post("/agent-query")
-async def query_agent(payload: dict):
-    if agent is None:
-        raise HTTPException(503, "Agent가 초기화되지 않았습니다.")
-    text = payload.get("text")
-    if not text:
-        raise HTTPException(400, "'text' 필드가 필요합니다.")
-    result = await Runner.run(agent, text)
-    return {"response": result.final_output}
