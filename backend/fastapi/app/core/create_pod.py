@@ -32,10 +32,11 @@ async def create_pod(user_id: str) -> Dict[str, Any]:
         # 환경 변수 목록 구성
         env_vars_list = []
         
-        # 기본 환경 변수 추가 - 사용자 ID
+        # 기본 환경 변수 추가
         env_vars_list.append({"name":"GMS_KEY","value":settings.GMS_KEY})
         env_vars_list.append({"name":"GMS_API_BASE","value":settings.GMS_API_BASE})
         env_vars_list.append({"name":"OPENAI_API_KEY","value":settings.OPENAI_API_KEY})
+        
         # 사용자가 선택한 MCP 서비스 목록 가져오기
         selected_mcps = await get_user_selected_mcps(user_id)
         if selected_mcps:
@@ -51,6 +52,10 @@ async def create_pod(user_id: str) -> Dict[str, Any]:
                 mcp_services_value = ",".join(mcp_types)
                 env_vars_list.append({"name": "MCP_SERVICES", "value": mcp_services_value})
                 logger.info(f"사용자 {user_id}의 MCP 서비스: {mcp_services_value}")
+        else:
+            # MCP가 없는 경우에도 빈 값을 설정하거나 기본값 설정
+            env_vars_list.append({"name": "MCP_SERVICES", "value": ""})
+            logger.info(f"사용자 {user_id}에게 선택된 MCP가 없습니다. 빈 MCP_SERVICES로 진행합니다.")
         
         # 사용자가 설정한 환경 변수 조회 및 추가
         user_env_settings = await get_env_vars(user_id)

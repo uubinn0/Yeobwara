@@ -41,7 +41,8 @@ async def read_mcps(current_user: dict = Depends(get_current_user)):
             "name": mcp["name"],
             "mcp_type": mcp.get("mcp_type", ""),
             "description": mcp.get("description", ""),
-            "env_vars_count": len(mcp.get("required_env_vars", [])),
+            "required_env_vars": mcp.get("required_env_vars", []),
+            # "env_vars_count": len(mcp.get("required_env_vars", [])),
             "is_selected": is_selected  # 사용자가 선택한 MCP인지 여부
         })
     return result
