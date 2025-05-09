@@ -40,7 +40,7 @@ from fastapi import FastAPI, HTTPException
 from agents import Agent, Runner, set_default_openai_client
 from agents.mcp.server import MCPServerStdio
 from openai import AsyncOpenAI
-
+import openai
 
 app = FastAPI()
 
@@ -49,6 +49,10 @@ GMS_API_BASE = os.getenv("GMS_API_BASE")
 if not GMS_KEY:
     raise RuntimeError("OPENAI_API_KEY 환경 변수가 설정되지 않았습니다.")
 
+# ******** override default openai library to point at GMS ********
+openai.api_key  = GMS_KEY
+openai.api_base = GMS_API_BASE
+# ********
 # os.environ["OPENAI_API_KEY"] = GMS_KEY
 custom_client = AsyncOpenAI(
     base_url=GMS_API_BASE,
