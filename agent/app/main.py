@@ -73,6 +73,14 @@ MCP_SERVER_CONFIG = {
         "params": {"command": "mcp-gitlab-server", "args": [], "env": {"GITLAB_PERSONAL_ACCESS_TOKEN": os.getenv("GITLAB_PERSONAL_ACCESS_TOKEN", ""), "GITLAB_API_URL": os.getenv("GITLAB_API_URL", "")}}
         # "params": {"command": "npx", "args": ["-y", "@modelcontextprotocol/server-gitlab"], "env": {"GITLAB_PERSONAL_ACCESS_TOKEN": os.getenv("GITLAB_PERSONAL_ACCESS_TOKEN", ""), "GITLAB_API_URL": os.getenv("GITLAB_API_URL", "")}}
     },
+    "duckduckgo-search": {
+        "type": "stdio",
+        "params": { "command": "duckduckgo-mcp-server", "args": [], "env": {}}
+    },
+    "korean-spell-checker": {
+        "type": "stdio",
+        "params": { "command": "korean-spell-checker", "args": [], "env": {}}
+    },
 }
 
 # 환경변수 MCP_SERVICES 기반으로 사용할 서비스만 필터링

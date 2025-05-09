@@ -15,6 +15,8 @@ RUN apt-get update && apt-get install -y \
 RUN npm install -g @suekou/mcp-notion-server
 RUN npm install -g @modelcontextprotocol/server-github
 RUN npm install -g @modelcontextprotocol/server-gitlab
+RUN npm install -g @winterjung/mcp-korean-spell
+RUN npm install -g duckduckgo-mcp-server
 
 # Python 패키지 설치
 RUN uv pip install --system \
