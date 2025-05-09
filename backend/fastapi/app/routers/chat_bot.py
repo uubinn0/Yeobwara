@@ -67,10 +67,10 @@ async def process_chat(chat_request: ChatRequest, current_user: dict = Depends(g
     ]
 
     result = subprocess.run(cmd,capture_output=True,text=True)
-    logger.info(f"테스팅 {result}")
+    # logger.info(f"테스팅 {result}")
 
-    bot_response = "안녕하세요! 어떻게 도와드릴까요?"  # 임시 응답
-    
+    # bot_response = "안녕하세요! 어떻게 도와드릴까요?"  # 임시 응답
+    bot_response = result["response"]
     return {
         "response": bot_response,
         "timestamp": datetime.utcnow()
