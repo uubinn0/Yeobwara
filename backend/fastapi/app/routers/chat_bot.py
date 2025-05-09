@@ -52,27 +52,86 @@ async def process_chat(chat_request: ChatRequest, current_user: dict = Depends(g
     """사용자의 채팅 메시지를 처리하고 응답합니다."""
     
     user_id = str(current_user["_id"])
-    # TODO
-    # agent와 통신하는 부분
-
-    from crud.nosql import get_user_by_id
+    
+    from crud.nosql import get_user_by_id  
+    
     user = await get_user_by_id(user_id)
     pod_name = user["pod_name"]
 
+    # 메시지에 특수문자가 있으면 JSON 파싱에 문제가 될 수 있으므로 이스케이프 처리
+    import json
+    escaped_message = json.dumps(chat_request.message)[1:-1]  # 따옴표 제거
+    
     cmd = [
         "kubectl", "exec", pod_name, "-n", "agent-env", "-c", "agent","--", 
         "curl", "-X", "POST", settings.AGENT_URL, 
         "-H", "Content-Type: application/json", 
-        "-d", f'{{"text": "{chat_request.message}"}}'
+        "-d", f'{{"text": "{escaped_message}"}}'
     ]
-
-    result = subprocess.run(cmd,capture_output=True,text=True)
-    logger.info(f"테스팅 {result}")
-
-    bot_response = "안녕하세요! 어떻게 도와드릴까요?"  # 임시 응답
+    
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    
+    # 응답 처리
+    if result.returncode != 0:
+        return {
+            "response": f"명령어 실행 실패 (코드: {result.returncode}): {result.stderr}",
+            "timestamp": datetime.utcnow()
+        }
+    
+    if not result.stdout.strip():
+        # stderr에 내용이 있다면 표시
+        if result.stderr.strip():
+            return {
+                "response": f"응답이 비어있습니다. 오류 내용: {result.stderr}",
+                "timestamp": datetime.utcnow()
+            }
+        else:
+            return {
+                "response": "응답이 비어있습니다. (stderr도 비어있음)",
+                "timestamp": datetime.utcnow()
+            }
+    
+    # 응답이 있는 경우 처리
+    try:
+        # 원본 응답 내용 출력
+        stripped_stdout = result.stdout.strip()
+        logger.info(f"처리할 응답 내용: '{stripped_stdout}'")
+        
+        # JSON 형식인지 확인
+        if stripped_stdout.startswith('{') and stripped_stdout.endswith('}'):
+            try:
+                data = json.loads(stripped_stdout)
+                logger.info(f"JSON 파싱 성공: {data}")
+                
+                if "response" in data:
+                    response_str = data["response"]
+                    # response가 문자열이고 JSON 형식인지 확인
+                    if isinstance(response_str, str) and response_str.startswith('{') and response_str.endswith('}'):
+                        try:
+                            inner_data = json.loads(response_str)
+                            logger.info(f"중첩 JSON 파싱 성공: {inner_data}")
+                            
+                            if "response" in inner_data:
+                                bot_response = inner_data["response"]
+                            else:
+                                bot_response = str(inner_data)
+                        except json.JSONDecodeError as e:
+                            logger.error(f"중첩 JSON 파싱 실패: {e}")
+                            bot_response = response_str
+                    else:
+                        bot_response = response_str
+                else:
+                    bot_response = str(data)
+            except json.JSONDecodeError as e:
+                logger.error(f"JSON 파싱 실패: {e}")
+                bot_response = stripped_stdout
+        else:
+            bot_response = stripped_stdout
+    except Exception as e:
+        logger.exception("응답 처리 중 예외 발생")
+        bot_response = f"응답 처리 중 예외 발생: {str(e)}"
     
     return {
         "response": bot_response,
         "timestamp": datetime.utcnow()
     }
-
