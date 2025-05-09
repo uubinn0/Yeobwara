@@ -8,6 +8,18 @@ from routers import nosql_auth, nosql_user, nosql_mcp, nosql_select, nosql_env,c
 from core.config import settings
 from crud.nosql import create_nosql_indexes
 
+import logging
+
+# root 로거 설정
+logging.basicConfig(
+    level=logging.INFO,  # 이 부분이 중요합니다. INFO 이상 레벨의 메시지를 처리합니다.
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler()  # 콘솔 출력
+    ]
+)
+
+
 app = FastAPI(title="MCP API")
 
 # CORS 미들웨어 설정
