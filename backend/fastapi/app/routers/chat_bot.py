@@ -61,7 +61,7 @@ async def process_chat(chat_request: ChatRequest, current_user: dict = Depends(g
 
     cmd = [
         "kubectl", "exec", pod_name, "-n", "agent-env", "-c", "agent","--", 
-        "curl", "-X", "POST", settings.AGNET_URL, 
+        "curl", "-X", "POST", settings.AGENT_URL, 
         "-H", "Content-Type: application/json", 
         "-d", f'{{"text": "{chat_request.message}"}}'
     ]

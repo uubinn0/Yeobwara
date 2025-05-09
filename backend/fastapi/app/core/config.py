@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY")
 
     # AGENT
-    AGNET_URL: str = os.getenv("AGENT_URL")
+    AGENT_URL: str = os.getenv("AGENT_URL")
 
     # CORS 설정
     CORS_ORIGINS: List[str] = Field(
