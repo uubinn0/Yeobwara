@@ -44,15 +44,15 @@ from openai import AsyncOpenAI
 
 app = FastAPI()
 
-OPENAI_API_KEY = os.getenv("GMS_KEY")
+GMS_KEY = os.getenv("GMS_KEY")
 OPENAI_BASE_URL = os.getenv("GMS_API_BASE")
-if not OPENAI_API_KEY:
+if not GMS_KEY:
     raise RuntimeError("OPENAI_API_KEY 환경 변수가 설정되지 않았습니다.")
 
-os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
+os.environ["OPENAI_API_KEY"] = GMS_KEY
 custom_client = AsyncOpenAI(
     base_url=OPENAI_BASE_URL,
-    api_key=OPENAI_API_KEY
+    api_key=GMS_KEY
 )
 set_default_openai_client(custom_client)
 
@@ -79,7 +79,7 @@ MCP_SERVER_CONFIG = {
     },
     "korean-spell-checker": {
         "type": "stdio",
-        "params": { "command": "korean-spell-checker", "args": [], "env": {}}
+        "params": { "command": "mcp-korean-spell", "args": [], "env": {}}
     },
 }
 
