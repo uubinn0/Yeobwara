@@ -70,12 +70,12 @@ export const toggleMcpSelection = async (public_id: string, isCurrentlySelected:
     
     if (isCurrentlySelected) {
       // 이미 선택된 상태라면 선택 취소
-      response = await api.delete(`/api/select/${public_id}/`);
+      response = await api.delete(`/api/select/${public_id}`);
       // response = await axios.delete(`https://k12b107.p.ssafy.io/api/select/${public_id}`);
       console.log('MCP 선택 취소 성공:', response.data);
     } else {
       // 선택되지 않은 상태라면 선택
-      response = await api.post(`/api/select/${public_id}/`);
+      response = await api.post(`/api/select/${public_id}`);
       // response = await axios.post(`https://k12b107.p.ssafy.io/api/select/${public_id}`);
       console.log('MCP 선택 성공:', response.data);
     }
@@ -90,7 +90,7 @@ export const toggleMcpSelection = async (public_id: string, isCurrentlySelected:
 // POD 생성 API - 설정된 MCP 서비스로 POD 생성
 export const createPod = async (): Promise<any> => {
   try {
-    const response = await api.post('/api/pod/');
+    const response = await api.post('/api/pod');
     // const response = await axios.post('https://k12b107.p.ssafy.io/api/pod');
     console.log('POD 생성 성공:', response.data);
     return response.data;
