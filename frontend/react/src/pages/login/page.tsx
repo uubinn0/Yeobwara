@@ -17,10 +17,10 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      // const response = await api.post(
-      //   '/users/login',
-      const response = await axios.post(
-        'https://k12b107.p.ssafy.io/api/users/login',
+      // const response = await axios.post(
+      //   'https://k12b107.p.ssafy.io/api/users/login',
+      const response = await api.post(
+        '/users/login',
         new URLSearchParams({
           username,
           password,

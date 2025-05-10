@@ -19,7 +19,6 @@ logging.basicConfig(
     ]
 )
 
-
 app = FastAPI(title="MCP API")
 
 # CORS 미들웨어 설정
@@ -31,18 +30,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# # 라우터 포함
-# app.include_router(nosql_user.router)
-# app.include_router(nosql_mcp.router)
-# app.include_router(nosql_select.router)
-# app.include_router(nosql_env.router)
-# app.include_router(chat_bot.router)
-# 라우터 포함 - /api prefix 추가
-app.include_router(nosql_user.router, prefix="/api")
-app.include_router(nosql_mcp.router, prefix="/api")
-app.include_router(nosql_select.router, prefix="/api")
-app.include_router(nosql_env.router, prefix="/api")
-app.include_router(chat_bot.router, prefix="/api")
+# 라우터 포함
+app.include_router(nosql_user.router)
+app.include_router(nosql_mcp.router)
+app.include_router(nosql_select.router)
+app.include_router(nosql_env.router)
+app.include_router(chat_bot.router)
 
 # 시작 시 인덱스 생성
 @app.on_event("startup")
