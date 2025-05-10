@@ -19,6 +19,6 @@ export default defineConfig({
     ],
     port: 5173,       // 명시적으로 포트 고정 (선택)
     hmr: false,       // HMR 비활성화 - 개발 중에는 페이지 수동 새로고침 필요
-    https: true,     // HTTP 사용
+    https: false,     // HTTP 사용
   },
 });
