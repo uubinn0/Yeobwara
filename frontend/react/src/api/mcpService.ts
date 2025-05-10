@@ -4,7 +4,8 @@ import { McpServiceResponse } from '../types/mcp';
 // MCP 서비스 목록 조회 API
 export const fetchMcpServices = async (): Promise<McpServiceResponse[]> => {
   try {
-    const response = await api.get('/mcps');
+    // const response = await api.get('/mcps');
+    const response = await api.get('/api/mcps');
     return response.data as McpServiceResponse[];
   } catch (error) {
     console.error('MCP 서비스 API 호출 실패:', error);
@@ -15,7 +16,8 @@ export const fetchMcpServices = async (): Promise<McpServiceResponse[]> => {
 // 환경변수 조회 API
 export const fetchEnvironmentVariables = async (): Promise<Record<string, Record<string, string>>> => {
   try {
-    const response = await api.get('/env');
+    // const response = await api.get('/env');
+    const response = await api.get('/api/env');
     console.log('환경변수 조회 성공:', response.data);
     return response.data as Record<string, Record<string, string>>; // 타입 단언
   } catch (error) {
@@ -52,7 +54,8 @@ export const saveMcpServiceSettings = async (services: any[]): Promise<void> => 
     
     // 단일 객체로 POST 요청
     console.log('저장할 환경변수 데이터:', payload);
-    await api.post('/env', payload);
+    //     await api.post('/env', payload);
+    await api.post('/api/env', payload);
   } catch (error) {
     console.error('MCP 서비스 환경변수 설정 저장 실패:', error);
     throw error; // 에러를 상위로 전파
@@ -66,11 +69,13 @@ export const toggleMcpSelection = async (public_id: string, isCurrentlySelected:
     
     if (isCurrentlySelected) {
       // 이미 선택된 상태라면 선택 취소
-      response = await api.delete(`/select/${public_id}`);
+      // response = await api.delete(`/select/${public_id}`);
+      response = await api.delete(`/api/select/${public_id}`);
       console.log('MCP 선택 취소 성공:', response.data);
     } else {
       // 선택되지 않은 상태라면 선택
-      response = await api.post(`/select/${public_id}`);
+      // response = await api.post(`/select/${public_id}`);
+      response = await api.post(`/api/select/${public_id}`);
       console.log('MCP 선택 성공:', response.data);
     }
     
@@ -84,7 +89,8 @@ export const toggleMcpSelection = async (public_id: string, isCurrentlySelected:
 // POD 생성 API - 설정된 MCP 서비스로 POD 생성
 export const createPod = async (): Promise<any> => {
   try {
-    const response = await api.post('/pod');
+    // const response = await api.post('/pod');
+    const response = await api.post('/api/pod');
     console.log('POD 생성 성공:', response.data);
     return response.data;
   } catch (error) {
