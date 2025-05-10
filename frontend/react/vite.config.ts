@@ -11,15 +11,29 @@ export default defineConfig({
     },
   },
   server: {
-    host: "0.0.0.0", // ← 이 부분 필수
+    host: "0.0.0.0",
     allowedHosts: [
-      'localhost',
-      '127.0.0.1',
-      'k12b107.p.ssafy.io',
-      'react'  // Docker 서비스 이름 추가
+      "localhost",
+      "127.0.0.1",
+      "k12b107.p.ssafy.io",
+      "react",  // Docker 서비스 이름
     ],
-    port: 5173,       // 명시적으로 포트 고정 (선택)
-    hmr: false,       // HMR 비활성화 - 개발 중에는 페이지 수동 새로고침 필요
-    https: false,     // HTTP 사용
+    port: 5173,
+    https: false,
+    hmr: {
+      protocol: 'ws',              // https 쓰는 경우 'wss'
+      host: 'k12b107.p.ssafy.io',  // 외부에서 접근하는 도메인
+      port: 5173,                  // HMR 전용 포트 (기본은 서버 포트)
+      clientPort: 5173             // 클라이언트가 연결할 포트
+    },
+    proxy: {
+      // /api로 들어오는 요청은 fastapi 컨테이너로 포워딩
+      "/api": {
+        target: "http://fastapi:8000",
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/api/, ""),
+      },
+    },
   },
 });
