@@ -4,7 +4,7 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from routers import nosql_auth, nosql_user, nosql_mcp, nosql_select, nosql_env, chat_bot, nosql_pod
+from routers import nosql_auth, nosql_user, nosql_mcp, nosql_select, nosql_env, chat_bot
 from core.config import settings
 from crud.nosql import create_nosql_indexes
 
@@ -31,13 +31,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 라우터 포함
-app.include_router(nosql_user.router)
+# # 라우터 포함
+# app.include_router(nosql_user.router)
+# app.include_router(nosql_mcp.router)
+# app.include_router(nosql_select.router)
+# app.include_router(nosql_env.router)
+# app.include_router(chat_bot.router)
+# 라우터 포함 - /api prefix 추가
+app.include_router(nosql_user.router, prefix="/api")
 app.include_router(nosql_mcp.router, prefix="/api")
 app.include_router(nosql_select.router, prefix="/api")
 app.include_router(nosql_env.router, prefix="/api")
-app.include_router(chat_bot.router)
-app.include_router(nosql_pod.router, prefix="/api")
+app.include_router(chat_bot.router, prefix="/api")
 
 # 시작 시 인덱스 생성
 @app.on_event("startup")
