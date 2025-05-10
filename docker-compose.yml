@@ -58,8 +58,8 @@ services:
       - fastapi
     ports:
       - "80:80"
-      - "443:443"
-    volumes:
-      # SSL 인증서 마운트 (EC2 호스트 → 컨테이너 내부)
-      - /etc/letsencrypt/live/p.ssafy.io/fullchain.pem:/etc/nginx/ssl/fullchain.pem:ro
-      - /etc/letsencrypt/live/p.ssafy.io/privkey.pem:/etc/nginx/ssl/privkey.pem:ro
+    #   - "443:443"
+    # volumes:
+    #   # SSL 인증서 마운트 (EC2 호스트 → 컨테이너 내부)
+    #   - /etc/letsencrypt/live/p.ssafy.io/fullchain.pem:/etc/nginx/ssl/fullchain.pem:ro
+    #   - /etc/letsencrypt/live/p.ssafy.io/privkey.pem:/etc/nginx/ssl/privkey.pem:ro
