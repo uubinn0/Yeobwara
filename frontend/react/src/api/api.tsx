@@ -4,7 +4,7 @@ import type { InternalAxiosRequestConfig } from 'axios';
 // const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
 // const baseURL = import.meta.env.VITE_API_BASE || "https://k12b107.p.ssafy.io";
 const baseURL = import.meta.env.VITE_API_BASE || "https://k12b107.p.ssafy.io/api";
-
+console.log('API Base URL:', baseURL);
 const api = axios.create({
   baseURL,
   headers: {

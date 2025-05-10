@@ -5,6 +5,7 @@ import { McpServiceResponse } from '../types/mcp';
 export const fetchMcpServices = async (): Promise<McpServiceResponse[]> => {
   try {
     const response = await api.get('/mcps');
+    console.log('Requesting URL:', `${api.defaults.baseURL}/mcps`);
     return response.data as McpServiceResponse[];
   } catch (error) {
     console.error('MCP 서비스 API 호출 실패:', error);
