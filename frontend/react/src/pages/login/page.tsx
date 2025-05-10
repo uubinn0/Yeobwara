@@ -20,7 +20,7 @@ export default function LoginPage() {
       // const response = await axios.post(
       //   'https://k12b107.p.ssafy.io/api/users/login',
       const response = await api.post(
-        '/users/login',
+        '/api/users/login',
         new URLSearchParams({
           username,
           password,
