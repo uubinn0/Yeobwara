@@ -65,19 +65,32 @@ export default function ChatPage() {
 
     try {
       // 실제 API 호출
-      const response = await api.post("/api/chat/", { message: input })
+      const response = await api.post("/api/chat", { message: input })
+      const data = response.data as { response: string }
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: response.data.response, // 서버 응답에 맞게 수정
+        content: data.response, // 서버 응답에 맞게 수정
         sender: "bot",
         timestamp: new Date(),
       }
       setMessages((prev) => [...prev, botMessage])
-    } catch (error) {
-      // 에러 처리
+    } catch (error: any) {
+      // 서버에서 반환한 에러 메시지 추출
+      let errorMsg = "서버와의 통신에 실패했습니다."
+      if (error?.response?.data) {
+        if (typeof error.response.data === 'string') {
+          errorMsg = error.response.data
+        } else if (error.response.data.detail) {
+          if (Array.isArray(error.response.data.detail)) {
+            errorMsg = error.response.data.detail.map((d: any) => d.msg).join(' ')
+          } else if (typeof error.response.data.detail === 'string') {
+            errorMsg = error.response.data.detail
+          }
+        }
+      }
       const errorMessage: Message = {
         id: (Date.now() + 2).toString(),
-        content: "서버와의 통신에 실패했습니다.",
+        content: errorMsg,
         sender: "bot",
         timestamp: new Date(),
       }
