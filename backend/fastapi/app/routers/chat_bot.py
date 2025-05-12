@@ -26,7 +26,7 @@ async def create_pod(current_user: dict = Depends(get_current_user)):
         pod_result = await c_create_pod(user_id)
         
         # 2초 대기
-        await asyncio.sleep(2)
+        await asyncio.sleep(3)
         
         # 두 번째 Pod 생성 시도
         pod_result = await c_create_pod(user_id)
