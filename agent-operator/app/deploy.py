@@ -79,7 +79,7 @@ async def deploy_agent(user_id: str, env_vars: list) -> str:
                 raise
         
     # # Pod 생성 확인을 위한 대기
-    # await asyncio.sleep(3)  # 적절한 대기 시간 설정
+    await asyncio.sleep(1)  # 적절한 대기 시간 설정
     
     # # Pod 이름 조회
     # pods = await asyncio.to_thread(
