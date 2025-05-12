@@ -62,7 +62,7 @@ MCP_SERVER_CONFIG = {
     },
     "gitlab": {
         "type": "stdio",
-        "params": {"command": "mcp-gitlab-server", "args": [], "env": {"GITLAB_PERSONAL_ACCESS_TOKEN": os.getenv("GITLAB_PERSONAL_ACCESS_TOKEN", ""), "GITLAB_API_URL": os.getenv("GITLAB_API_URL", "")}}
+        "params": {"command": "mcp-gitlab-server", "args": [], "env": {"GITLAB_PERSONAL_ACCESS_TOKEN": os.getenv("GITLAB_PERSONAL_ACCESS_TOKEN", ""), "GITLAB_API_URL": os.getenv("GITLAB_API_URL", ""), "GITLAB_READ_ONLY_MODE": os.getenv("GITLAB_READ_ONLY_MODE", "true")}}
         # "params": {"command": "npx", "args": ["-y", "@modelcontextprotocol/server-gitlab"], "env": {"GITLAB_PERSONAL_ACCESS_TOKEN": os.getenv("GITLAB_PERSONAL_ACCESS_TOKEN", ""), "GITLAB_API_URL": os.getenv("GITLAB_API_URL", "")}}
     },
     "duckduckgo-search": {
