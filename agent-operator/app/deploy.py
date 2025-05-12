@@ -10,7 +10,7 @@ async def deploy_agent(user_id: str, env_vars: list) -> str:
     core_v1 = client.CoreV1Api()
 
     # 디플로이먼트 생성 로직을 비동기로 실행
-    deployment = client.V1Deployment(
+    deployment = await client.V1Deployment(
         metadata=client.V1ObjectMeta(name=name, labels={"app": name}),
         spec=client.V1DeploymentSpec(
             replicas=1,
