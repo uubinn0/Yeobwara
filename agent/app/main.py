@@ -50,11 +50,11 @@ os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
 
 # MCP 서버들 설정 ( 어떤 github 을 npx 로 띄울건지 )
 MCP_SERVER_CONFIG = {
-    # "github": {
-    #     "type": "stdio",
-    #     "params": {"command": "mcp-server-github", "args": [], "env": {"GITHUB_PERSONAL_ACCESS_TOKEN": os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN", "")}}
-    #     # "params": {"command": "npx", "args": ["-y", "@modelcontextprotocol/server-github"], "env": {"GITHUB_PERSONAL_ACCESS_TOKEN": os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN", "")}}
-    # },
+    "github": {
+        "type": "stdio",
+        "params": {"command": "mcp-server-github", "args": [], "env": {"GITHUB_PERSONAL_ACCESS_TOKEN": os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN", "")}}
+        # "params": {"command": "npx", "args": ["-y", "@modelcontextprotocol/server-github"], "env": {"GITHUB_PERSONAL_ACCESS_TOKEN": os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN", "")}}
+    },
     "notion": {
         "type": "stdio",
         "params": {"command": "mcp-notion-server", "args": [], "env": {"NOTION_API_TOKEN": os.getenv("NOTION_API_TOKEN", "")}}
@@ -71,13 +71,13 @@ MCP_SERVER_CONFIG = {
         "type": "stdio",
         "params": { "command": "mcp-korean-spell", "args": [], "env": {}}
     },
-    "actors-mcp-server": {
-        "type": "stdio",
-        "params": {"command": "actors-mcp-server",
-            "args": ["--actors", "canadesk/skyscanner-flights-api"],
-            "env": {"APIFY_TOKEN": os.getenv("APIFY_TOKEN", "")}
-        }
-    },
+    # "actors-mcp-server": {
+    #     "type": "stdio",
+    #     "params": {"command": "actors-mcp-server",
+    #         "args": ["--actors", "canadesk/skyscanner-flights-api"],
+    #         "env": {"APIFY_TOKEN": os.getenv("APIFY_TOKEN", "")}
+    #     }
+    # },
 }
 
 # 환경변수 MCP_SERVICES 기반으로 사용할 서비스만 필터링
