@@ -50,20 +50,18 @@ os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
 
 # MCP 서버들 설정 ( 어떤 github 을 npx 로 띄울건지 )
 MCP_SERVER_CONFIG = {
-    "github": {
-        "type": "stdio",
-        "params": {"command": "mcp-server-github", "args": [], "env": {"GITHUB_PERSONAL_ACCESS_TOKEN": os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN", "")}}
-        # "params": {"command": "npx", "args": ["-y", "@modelcontextprotocol/server-github"], "env": {"GITHUB_PERSONAL_ACCESS_TOKEN": os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN", "")}}
-    },
+    # "github": {
+    #     "type": "stdio",
+    #     "params": {"command": "mcp-server-github", "args": [], "env": {"GITHUB_PERSONAL_ACCESS_TOKEN": os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN", "")}}
+    #     # "params": {"command": "npx", "args": ["-y", "@modelcontextprotocol/server-github"], "env": {"GITHUB_PERSONAL_ACCESS_TOKEN": os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN", "")}}
+    # },
     "notion": {
         "type": "stdio",
         "params": {"command": "mcp-notion-server", "args": [], "env": {"NOTION_API_TOKEN": os.getenv("NOTION_API_TOKEN", "")}}
-        # "params": {"command": "npx", "args": ["-y", "@suekou/mcp-notion-server"], "env": {"NOTION_API_TOKEN": os.getenv("NOTION_API_TOKEN", "")}}
     },
     "gitlab": {
         "type": "stdio",
         "params": {"command": "mcp-gitlab", "args": [], "env": {"GITLAB_PERSONAL_ACCESS_TOKEN": os.getenv("GITLAB_PERSONAL_ACCESS_TOKEN", ""), "GITLAB_API_URL": os.getenv("GITLAB_API_URL", ""), "GITLAB_READ_ONLY_MODE": os.getenv("GITLAB_READ_ONLY_MODE", "true")}}
-        # "params": {"command": "npx", "args": ["-y", "@modelcontextprotocol/server-gitlab"], "env": {"GITLAB_PERSONAL_ACCESS_TOKEN": os.getenv("GITLAB_PERSONAL_ACCESS_TOKEN", ""), "GITLAB_API_URL": os.getenv("GITLAB_API_URL", "")}}
     },
     "duckduckgo-search": {
         "type": "stdio",
@@ -72,6 +70,13 @@ MCP_SERVER_CONFIG = {
     "korean-spell-checker": {
         "type": "stdio",
         "params": { "command": "mcp-korean-spell", "args": [], "env": {}}
+    },
+    "actors-mcp-server": {
+        "type": "stdio",
+        "params": {"command": "actors-mcp-server",
+            "args": ["--actors", "canadesk/skyscanner-flights-api"],
+            "env": {"APIFY_TOKEN": os.getenv("APIFY_TOKEN", "")}
+        }
     },
 }
 
