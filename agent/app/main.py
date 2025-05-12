@@ -94,9 +94,9 @@ async def startup_event():
         servers.append(srv)
     agent = Agent(
         name="Assistant",
-        instructions="Use the tools to achieve the task",
-        # model="gpt-4.1-mini",
-        model="gpt-4.1",
+        instructions="Use the tools to achieve the task. today's date is 2025-05-12",
+        model="gpt-4.1-mini",
+        # model="gpt-4.1",
         mcp_servers=servers
     )
 
