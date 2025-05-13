@@ -52,18 +52,16 @@ os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
 MCP_SERVER_CONFIG = {
     "github": {
         "type": "stdio",
-        "params": {"command": "mcp-github-server", "args": [], "env": {"GITHUB_PERSONAL_ACCESS_TOKEN": os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN", "")}}
+        "params": {"command": "mcp-server-github", "args": [], "env": {"GITHUB_PERSONAL_ACCESS_TOKEN": os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN", "")}}
         # "params": {"command": "npx", "args": ["-y", "@modelcontextprotocol/server-github"], "env": {"GITHUB_PERSONAL_ACCESS_TOKEN": os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN", "")}}
     },
     "notion": {
         "type": "stdio",
         "params": {"command": "mcp-notion-server", "args": [], "env": {"NOTION_API_TOKEN": os.getenv("NOTION_API_TOKEN", "")}}
-        # "params": {"command": "npx", "args": ["-y", "@suekou/mcp-notion-server"], "env": {"NOTION_API_TOKEN": os.getenv("NOTION_API_TOKEN", "")}}
     },
     "gitlab": {
         "type": "stdio",
-        "params": {"command": "mcp-gitlab-server", "args": [], "env": {"GITLAB_PERSONAL_ACCESS_TOKEN": os.getenv("GITLAB_PERSONAL_ACCESS_TOKEN", ""), "GITLAB_API_URL": os.getenv("GITLAB_API_URL", "")}}
-        # "params": {"command": "npx", "args": ["-y", "@modelcontextprotocol/server-gitlab"], "env": {"GITLAB_PERSONAL_ACCESS_TOKEN": os.getenv("GITLAB_PERSONAL_ACCESS_TOKEN", ""), "GITLAB_API_URL": os.getenv("GITLAB_API_URL", "")}}
+        "params": {"command": "mcp-gitlab", "args": [], "env": {"GITLAB_PERSONAL_ACCESS_TOKEN": os.getenv("GITLAB_PERSONAL_ACCESS_TOKEN", ""), "GITLAB_API_URL": os.getenv("GITLAB_API_URL", ""), "GITLAB_READ_ONLY_MODE": os.getenv("GITLAB_READ_ONLY_MODE", "true")}}
     },
     "duckduckgo-search": {
         "type": "stdio",
@@ -73,6 +71,13 @@ MCP_SERVER_CONFIG = {
         "type": "stdio",
         "params": { "command": "mcp-korean-spell", "args": [], "env": {}}
     },
+    # "actors-mcp-server": {
+    #     "type": "stdio",
+    #     "params": {"command": "actors-mcp-server",
+    #         "args": ["--actors", "canadesk/skyscanner-flights-api"],
+    #         "env": {"APIFY_TOKEN": os.getenv("APIFY_TOKEN", "")}
+    #     }
+    # },
 }
 
 # 환경변수 MCP_SERVICES 기반으로 사용할 서비스만 필터링
@@ -94,9 +99,9 @@ async def startup_event():
         servers.append(srv)
     agent = Agent(
         name="Assistant",
-        instructions="Use the tools to achieve the task",
-        # model="gpt-4.1-mini",
-        model="gpt-4.1",
+        instructions="Use the tools to achieve the task. today's date is 2025-05-12",
+        model="gpt-4.1-mini",
+        # model="gpt-4.1",
         mcp_servers=servers
     )
 
