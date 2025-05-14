@@ -41,7 +41,7 @@ export default function LoginPage() {
         localStorage.setItem('access_token', response.data.access_token)
         navigate("/chat")
       } else {
-        alert("로그인에 실패했습니다. 다시 확인해 주세요.")
+        alert("로그인에 실패했습니다. 토큰 발급에 실패했습니다.")
         setIsLoading(false)
       }
     } catch (error) {
