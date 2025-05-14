@@ -13,13 +13,11 @@ RUN apt-get update && apt-get install -y \
 
 # Dockerfile
 RUN npm install -g @suekou/mcp-notion-server
-RUN npm install -g @modelcontextprotocol/server-github
-# RUN npm install -g @modelcontextprotocol/server-gitlab
 RUN npm install -g @zereight/mcp-gitlab
 RUN npm install -g @winterjung/mcp-korean-spell
 RUN npm install -g duckduckgo-mcp-server
-# RUN npm install -g @apify/actors-mcp-server
 RUN npm install -g @modelcontextprotocol/server-sequential-thinking
+RUN npm install -g @modelcontextprotocol/server-github
 
 # Python 패키지 설치
 RUN uv pip install --system \

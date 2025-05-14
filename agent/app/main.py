@@ -50,11 +50,6 @@ os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
 
 # MCP 서버들 설정 ( 어떤 github 을 npx 로 띄울건지 )
 MCP_SERVER_CONFIG = {
-    "github": {
-        "type": "stdio",
-        "params": {"command": "mcp-server-github", "args": [], "env": {"GITHUB_PERSONAL_ACCESS_TOKEN": os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN", "")}}
-        # "params": {"command": "npx", "args": ["-y", "@modelcontextprotocol/server-github"], "env": {"GITHUB_PERSONAL_ACCESS_TOKEN": os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN", "")}}
-    },
     "notion": {
         "type": "stdio",
         "params": {"command": "mcp-notion-server", "args": [], "env": {"NOTION_API_TOKEN": os.getenv("NOTION_API_TOKEN", "")}}
@@ -73,8 +68,14 @@ MCP_SERVER_CONFIG = {
     },
     "sequentialthinking": {
         "type": "stdio",
-        "params": {"command": "mcp-server-sequentialthinking", "args": [], "env": {}}
+        "params": {"command": "mcp-server-sequential-thinking", "args": [], "env": {}}
     },
+    "github": {
+        "type": "stdio",
+        "params": {"command": "mcp-server-github", "args": [], "env": {"GITHUB_PERSONAL_ACCESS_TOKEN": os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN", "")}}
+        # "params": {"command": "npx", "args": ["-y", "@modelcontextprotocol/server-github"], "env": {"GITHUB_PERSONAL_ACCESS_TOKEN": os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN", "")}}
+    },
+
 }
 
 # 환경변수 MCP_SERVICES 기반으로 사용할 서비스만 필터링
