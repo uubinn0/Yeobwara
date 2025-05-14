@@ -109,11 +109,11 @@ async def conversational_chat(
             "-c", "agent", 
             "--", 
             "curl", "-s", "-X", "POST", 
-            settings.AGENT_URL,
+            f"{settings.AGENT_URL}-test",
             "-H", "Content-Type: application/json",
             "-d", json.dumps(agent_request, cls=DateTimeEncoder)
         ]
-        
+        logger.info(f"cmd 메시지 확인용 {cmd}")
         try:
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
         except subprocess.TimeoutExpired:
