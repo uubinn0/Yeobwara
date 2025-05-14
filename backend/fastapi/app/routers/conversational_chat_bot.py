@@ -68,6 +68,7 @@ async def conversational_chat(
     user_id = str(current_user["_id"])
     
     try:
+        logger.info(f"대화 요청 시작 - 사용자: {user_id}, 메시지: {chat_request.message}")
         # 사용자 정보 조회
         from crud.nosql import get_user_by_id
         user = await get_user_by_id(user_id)
@@ -154,11 +155,19 @@ async def conversational_chat(
             )
         
         # DB에 대화 저장
-        await conversation_manager.add_message(
-            user_id=user_id,
-            user_message=chat_request.message,
-            assistant_response=bot_response
-        )
+        try:
+            logger.info(f"대화 저장 시가 - 사용자: {user_id}, 메시지: {chat_request.message[:50]}..., 응답: {bot_response[:50]}...")
+            
+            await conversation_manager.add_message(
+                user_id=user_id,
+                user_message=chat_request.message,
+                assistant_response=bot_response
+            )
+            
+            logger.info(f"대화 저장 성공 - 사용자: {user_id}")
+        except Exception as save_error:
+            logger.error(f"대화 저장 오류 - 사용자: {user_id}, 오류: {str(save_error)}")
+            # 저장 오류가 발생해도 응답은 반환하도록 수정
         
         # 대화 요약 정보 가져오기
         summary = await conversation_manager.get_conversation_summary(user_id)
