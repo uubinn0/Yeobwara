@@ -71,13 +71,10 @@ MCP_SERVER_CONFIG = {
         "type": "stdio",
         "params": { "command": "mcp-korean-spell", "args": [], "env": {}}
     },
-    # "actors-mcp-server": {
-    #     "type": "stdio",
-    #     "params": {"command": "actors-mcp-server",
-    #         "args": ["--actors", "canadesk/skyscanner-flights-api"],
-    #         "env": {"APIFY_TOKEN": os.getenv("APIFY_TOKEN", "")}
-    #     }
-    # },
+    "sequentialthinking": {
+        "type": "stdio",
+        "params": {"command": "mcp-server-sequentialthinking", "args": [], "env": {}}
+    },
 }
 
 # 환경변수 MCP_SERVICES 기반으로 사용할 서비스만 필터링

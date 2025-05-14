@@ -19,6 +19,7 @@ RUN npm install -g @zereight/mcp-gitlab
 RUN npm install -g @winterjung/mcp-korean-spell
 RUN npm install -g duckduckgo-mcp-server
 # RUN npm install -g @apify/actors-mcp-server
+RUN npm install -g @modelcontextprotocol/server-sequential-thinking
 
 # Python 패키지 설치
 RUN uv pip install --system \
