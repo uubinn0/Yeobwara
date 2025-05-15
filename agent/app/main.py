@@ -101,7 +101,7 @@ MCP_SERVER_CONFIG = {
     },
     "airbnb": {
         "type": "stdio",
-        "params": {"command": "@openbnb/mcp-server-airbnb", "args": ["--ignore-robots-txt"], "env": {}}
+        "params": {"command": "mcp-server-airbnb", "args": ["--ignore-robots-txt"], "env": {}}
     },
     "github": {
         "type": "stdio",
