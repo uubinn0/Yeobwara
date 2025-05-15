@@ -99,6 +99,10 @@ MCP_SERVER_CONFIG = {
         "type": "stdio",
         "params": {"command": "mcp-server-sequential-thinking", "args": [], "env": {}}
     },
+    "airbnb": {
+        "type": "stdio",
+        "params": {"command": "@openbnb/mcp-server-airbnb", "args": ["--ignore-robots-txt"], "env": {}}
+    },
     "github": {
         "type": "stdio",
         "params": {"command": "mcp-server-github", "args": [], "env": {"GITHUB_PERSONAL_ACCESS_TOKEN": os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN", "")}}

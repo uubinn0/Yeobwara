@@ -18,6 +18,7 @@ RUN npm install -g @winterjung/mcp-korean-spell
 RUN npm install -g duckduckgo-mcp-server
 RUN npm install -g @modelcontextprotocol/server-sequential-thinking
 RUN npm install -g @modelcontextprotocol/server-github
+RUN npm install -g @openbnb/mcp-server-airbnb
 
 # Python 패키지 설치
 RUN uv pip install --system \
