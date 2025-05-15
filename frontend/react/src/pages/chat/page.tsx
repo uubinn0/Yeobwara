@@ -504,7 +504,6 @@ export default function ChatPage() {
               placeholder="메시지를 입력하세요..."
               className="flex-1 bg-gray-900/60 border-gray-700 text-white min-h-[40px] max-h-[150px] resize-none py-2 px-3"
               onKeyDown={handleKeyDown}
-              disabled={isLoading}
             />
             <Button
               type="submit"
