@@ -28,7 +28,7 @@ services:
       - DEPLOY_SERVER_URL=${DEPLOY_SERVER_URL}
 
       # GMS 설정
-      - GMS_KEY=${GMS_KEY}
+      - GMS_API_KEY=${GMS_API_KEY}
       - GMS_API_BASE=${GMS_API_BASE}
 
       # AGENT 설정
