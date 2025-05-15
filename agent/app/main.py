@@ -45,10 +45,23 @@ from typing import List, Dict, Any, Optional
 
 app = FastAPI()
 
+
+#############################################
+
+# OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+# if not OPENAI_API_KEY:
+#     raise RuntimeError("OPENAI_API_KEY 환경 변수가 설정되지 않았습니다.")
+# os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
+
+GMS_API_KEY = os.getenv("GMS_API_KEY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-if not OPENAI_API_KEY:
-    raise RuntimeError("OPENAI_API_KEY 환경 변수가 설정되지 않았습니다.")
-os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
+os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY                   # Openai의 트레이싱을 하는데 사용할 개인 Openai Key
+base_url="https://gms.p.ssafy.io/gmsapi/api.openai.com/v1"
+client = AsyncOpenAI(api_key=GMS_API_KEY, base_url=base_url)    # 실제 API 호출은 GMS를 사용
+set_default_openai_client(client, use_for_tracing=False)        # 트레이싱에는 GMS를 사용하지 않음
+
+#############################################
+
 
 # 요청 모델 정의
 class AgentRequest(BaseModel):
