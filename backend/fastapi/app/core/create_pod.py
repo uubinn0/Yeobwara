@@ -33,7 +33,7 @@ async def create_pod(user_id: str) -> Dict[str, Any]:
         env_vars_list = []
         
         # 기본 환경 변수 추가
-        # env_vars_list.append({"name":"GMS_KEY","value":settings.GMS_KEY})
+        env_vars_list.append({"name":"GMS_KEY","value":settings.GMS_KEY})
         # env_vars_list.append({"name":"GMS_API_BASE","value":settings.GMS_API_BASE})
         env_vars_list.append({"name":"OPENAI_API_KEY","value":settings.OPENAI_API_KEY})
         
