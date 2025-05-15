@@ -143,7 +143,7 @@ async def startup_event():
         name="Assistant",
         instructions="Use the tools to achieve the task. Consider the conversation history when provided. Today's date is 2025-05-12",
         # model="gpt-4.1-mini",
-        model=gms_model
+        model=gms_model,
         mcp_servers=servers
     )
 
