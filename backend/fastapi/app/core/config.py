@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     DEPLOY_SERVER_URL: str = os.getenv("DEPLOY_SERVER_URL")
 
     # GMS API KEY
-    GMS_KEY: str = os.getenv("GMS_KEY")
+    GMS_API_KEY: str = os.getenv("GMS_API_KEY")
     GMS_API_BASE: str = os.getenv("GMS_API_BASE")
 
     # OPEN API KEY

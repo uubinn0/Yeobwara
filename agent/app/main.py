@@ -37,7 +37,7 @@ EOF
 ###########################################################################################
 import os
 from fastapi import FastAPI, HTTPException
-from agents import Agent, Runner, set_default_openai_client
+from agents import Agent, Runner, set_default_openai_client, OpenAIChatCompletionsModel
 from agents.mcp.server import MCPServerStdio
 from openai import AsyncOpenAI
 from pydantic import BaseModel
@@ -45,10 +45,29 @@ from typing import List, Dict, Any, Optional
 
 app = FastAPI()
 
+
+#############################################
+
+# OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+# if not OPENAI_API_KEY:
+#     raise RuntimeError("OPENAI_API_KEY 환경 변수가 설정되지 않았습니다.")
+# os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
+
+GMS_API_KEY = os.getenv("GMS_API_KEY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-if not OPENAI_API_KEY:
-    raise RuntimeError("OPENAI_API_KEY 환경 변수가 설정되지 않았습니다.")
-os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
+os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY                   # Openai의 트레이싱을 하는데 사용할 개인 Openai Key
+base_url="https://gms.p.ssafy.io/gmsapi/api.openai.com/v1"
+gms_client = AsyncOpenAI(api_key=GMS_API_KEY, base_url=base_url)    # 실제 API 호출은 GMS를 사용
+set_default_openai_client(gms_client, use_for_tracing=False)        # 트레이싱에는 GMS를 사용하지 않음
+
+# gms_client 를 사용한 모델 지정 
+gms_model = OpenAIChatCompletionsModel(
+    model="gpt-4.1-mini",
+    openai_client=gms_client
+)
+
+#############################################
+
 
 # 요청 모델 정의
 class AgentRequest(BaseModel):
@@ -123,8 +142,8 @@ async def startup_event():
     agent = Agent(
         name="Assistant",
         instructions="Use the tools to achieve the task. Consider the conversation history when provided. Today's date is 2025-05-12",
-        model="gpt-4.1-mini",
-        # model="gpt-4.1",
+        # model="gpt-4.1-mini",
+        model=gms_model,
         mcp_servers=servers
     )
 
