@@ -42,6 +42,7 @@ from agents.mcp.server import MCPServerStdio
 from openai import AsyncOpenAI
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
+from datetime import date
 
 app = FastAPI()
 
@@ -141,7 +142,7 @@ async def startup_event():
         servers.append(srv)
     agent = Agent(
         name="Assistant",
-        instructions="Use the tools to achieve the task. Consider the conversation history when provided. Today's date is 2025-05-12",
+        instructions="Use the tools to achieve the task. Consider the conversation history when provided. Today's date is f"date.today().isoformat()". Answer in markdown format.",
         # model="gpt-4.1-mini",
         model=gms_model,
         mcp_servers=servers
