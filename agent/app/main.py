@@ -142,7 +142,7 @@ async def startup_event():
         servers.append(srv)
     agent = Agent(
         name="Assistant",
-        instructions="Use the tools to achieve the task. Consider the conversation history when provided. Today's date is f"date.today().isoformat()". Answer in markdown format.",
+        instructions = f"Use the tools to achieve the task. Consider the conversation history when provided. Today's date is {date.today().isoformat()}. Answer in markdown format."
         # model="gpt-4.1-mini",
         model=gms_model,
         mcp_servers=servers
