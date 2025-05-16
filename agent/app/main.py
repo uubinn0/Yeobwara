@@ -126,12 +126,18 @@ MCP_SERVER_CONFIG = {
                  "args": ["run", "--directory", "/srv/paper-search-mcp", "-m", "paper_search_mcp.server"], 
                  "env": {}}
     },
-    "chess-local": {
-      "type": "stdio",
-      "params": {"command": "uv",
-        "args": ["--directory", "/srv/chess-mcp", "run", "src/chess_mcp/main.py"],"env": {}}
-    },
+    # "chess-local": {
+    #   "type": "stdio",
+    #   "params": {"command": "uv",
+    #     "args": ["--directory", "/srv/chess-mcp", "run", "src/chess_mcp/main.py"],"env": {}}
+    # },
 
+    "dart-mcp": {
+        "type": "stdio",
+        "params": {"command": "uv",
+            "args": ["run", "--directory", "/srv/dart-mcp", "dart.py"],
+            "env": {"DART_API_KEY": os.getenv("DART_API_KEY", "")}}
+    },
 
 
 }

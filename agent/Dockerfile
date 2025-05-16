@@ -27,10 +27,13 @@ RUN git clone https://github.com/openags/paper-search-mcp.git /srv/paper-search-
 WORKDIR /srv/paper-search-mcp
 RUN pip install --no-cache-dir .
 # 체스 서버 소스 클론 후 설치
-RUN git clone https://github.com/jiayao/mcp-chess.git /srv/mcp-chess
-WORKDIR /srv/mcp-chess
+# RUN git clone https://github.com/jiayao/mcp-chess.git /srv/mcp-chess
+# WORKDIR /srv/mcp-chess
+# RUN pip install --no-cache-dir .
+# dart 서버 소스 클론 후 설치
+RUN git clone https://github.com/2geonhyup/dart-mcp.git /srv/dart-mcp
+WORKDIR /srv/dart-mcp
 RUN pip install --no-cache-dir .
-
 
 ### npm 로컬 
 # 카카오 지도 서버 소스 클론 후 설치
