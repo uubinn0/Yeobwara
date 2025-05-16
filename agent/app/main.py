@@ -114,6 +114,14 @@ MCP_SERVER_CONFIG = {
         "env": {"KAKAO_API_KEY": os.getenv("KAKAO_API_KEY", "")}
         }
     },
+    "figma": {
+      "type": "stdio",
+      "params": {"command": "figma-developer-mcp",
+        "args": [f"--figma-api-key={os.getenv('FIGMA_API_KEY', '')}", "--stdio"], "env": {}
+        }
+    },
+
+
 }
 
 # 환경변수 MCP_SERVICES 기반으로 사용할 서비스만 필터링
