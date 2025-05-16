@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y \
   && ln -s /root/.local/bin/uv /usr/local/bin/uv \
   && rm -rf /var/lib/apt/lists/*
 
-# Dockerfile
+# “글로벌 패키지”로 Node 모듈을 설치
 RUN npm install -g @suekou/mcp-notion-server
 RUN npm install -g @zereight/mcp-gitlab
 RUN npm install -g @winterjung/mcp-korean-spell
@@ -20,10 +20,15 @@ RUN npm install -g @modelcontextprotocol/server-sequential-thinking
 RUN npm install -g @modelcontextprotocol/server-github
 RUN npm install -g @openbnb/mcp-server-airbnb
 
+# 특정 “폴더 내”로 소스 직접 복제, 빌드
 RUN git clone https://github.com/cgoinglove/mcp-server-kakao-map.git /srv/mcp-server-kakao-map
-RUN cd /srv/mcp-server-kakao-map && npm install && cd ..
+WORKDIR /srv/mcp-server-kakao-map
+RUN npm install
+RUN npm run build
+
 
 # Python 패키지 설치
+WORKDIR /app
 RUN uv pip install --system \
     fastapi uvicorn[standard] openai-agents openai
 
