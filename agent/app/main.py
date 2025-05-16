@@ -120,6 +120,13 @@ MCP_SERVER_CONFIG = {
         "args": [f"--figma-api-key={os.getenv('FIGMA_API_KEY', '')}", "--stdio"], "env": {}
         }
     },
+    "paper-search": {
+      "type": "stdio",
+      "params": {"command": "uv", 
+                 "args": ["run", "--directory", "/srv/paper-search-mcp", "-m", "paper_search_mcp.server"], 
+                 "env": {}}
+    },
+
 
 
 }
