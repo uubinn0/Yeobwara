@@ -108,7 +108,12 @@ MCP_SERVER_CONFIG = {
         "params": {"command": "mcp-server-github", "args": [], "env": {"GITHUB_PERSONAL_ACCESS_TOKEN": os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN", "")}}
         # "params": {"command": "npx", "args": ["-y", "@modelcontextprotocol/server-github"], "env": {"GITHUB_PERSONAL_ACCESS_TOKEN": os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN", "")}}
     },
-
+    "kakao-map": {
+        "type": "stdio",
+        "params": {"command": "node", "args": ["/srv/mcp-server-kakao-map/src/index.js"],
+        "env": {"KAKAO_REST_API_KEY": os.getenv("KAKAO_REST_API_KEY", "")}
+        }
+    },
 }
 
 # 환경변수 MCP_SERVICES 기반으로 사용할 서비스만 필터링

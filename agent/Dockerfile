@@ -20,6 +20,9 @@ RUN npm install -g @modelcontextprotocol/server-sequential-thinking
 RUN npm install -g @modelcontextprotocol/server-github
 RUN npm install -g @openbnb/mcp-server-airbnb
 
+RUN git clone https://github.com/cgoinglove/mcp-server-kakao-map.git /srv/mcp-server-kakao-map
+RUN cd /srv/mcp-server-kakao-map && npm install && cd ..
+
 # Python 패키지 설치
 RUN uv pip install --system \
     fastapi uvicorn[standard] openai-agents openai
