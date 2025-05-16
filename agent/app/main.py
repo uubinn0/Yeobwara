@@ -111,7 +111,7 @@ MCP_SERVER_CONFIG = {
     "kakao-map": {
         "type": "stdio",
         "params": {"command": "node", "args": ["/srv/mcp-server-kakao-map/dist/index.js"],
-        "env": {"KAKAO_REST_API_KEY": os.getenv("KAKAO_REST_API_KEY", "")}
+        "env": {"KAKAO_API_KEY": os.getenv("KAKAO_API_KEY", "")}
         }
     },
 }
