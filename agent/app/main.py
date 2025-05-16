@@ -126,6 +126,10 @@ MCP_SERVER_CONFIG = {
                  "args": ["run", "--directory", "/srv/paper-search-mcp", "-m", "paper_search_mcp.server"], 
                  "env": {}}
     },
+    "chess": {
+        "type": "stdio",
+        "params": {"command": "uvx", "args": ["mcp-chess"], "env": {}}
+    },
 
 
 

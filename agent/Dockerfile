@@ -21,12 +21,19 @@ RUN npm install -g @modelcontextprotocol/server-github
 RUN npm install -g @openbnb/mcp-server-airbnb
 RUN npm install -g figma-developer-mcp
 
-# pip 로컬 ) 특정 “폴더 내”로 소스 직접 복제, 빌드
+### python 기반
+# 논문 검색 서버 소스 클론 후 설치
 RUN git clone https://github.com/openags/paper-search-mcp.git /srv/paper-search-mcp
 WORKDIR /srv/paper-search-mcp
 RUN pip install --no-cache-dir .
+# 체스 서버 소스 클론 후 설치
+RUN git clone https://github.com/jiayao/mcp-chess.git /srv/mcp-chess
+WORKDIR /srv/mcp-chess
+RUN pip install --no-cache-dir .
 
-# npm 로컬 ) 특정 “폴더 내”로 소스 직접 복제, 빌드
+
+### npm 로컬 
+# 카카오 지도 서버 소스 클론 후 설치
 RUN git clone https://github.com/cgoinglove/mcp-server-kakao-map.git /srv/mcp-server-kakao-map
 WORKDIR /srv/mcp-server-kakao-map
 RUN npm install
