@@ -3,6 +3,10 @@ from app.deploy import deploy_agent
 
 app = FastAPI()
 
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
+
 @app.post("/deploy")
 async def deploy_user_server(request: Request):
     try:
