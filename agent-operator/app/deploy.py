@@ -84,21 +84,24 @@ async def deploy_agent(user_id: str, env_vars: list) -> str:
             else None
         )
 
-    # 5) Watch로 새 Pod 감지
     def _watch_new_pod():
         w = watch.Watch()
         for event in w.stream(
             core_v1.list_namespaced_pod,
             namespace=NAMESPACE,
             label_selector=f"app={name}",
-            timeout_seconds=60
+            timeout_seconds=120,        # 필요하다면 타임아웃 늘리기
         ):
             pod = event['object']
-            if event['type'] == 'ADDED' and pod.metadata.name not in existing:
-                # 준비 완료 상태까지 기다리려면 아래 조건 추가 가능
-                if pod.status.phase == "Running":
-                    w.stop()
-                    return pod.metadata.name
+            pod_name = pod.metadata.name
+
+            # 기존에 없던 Pod 이름이고, Running 상태라면 바로 리턴
+            if pod_name not in existing and pod.status.phase == "Running":
+                w.stop()
+                return pod_name
+
+        # 타임아웃 시 명확히 에러 내버리기
+        raise RuntimeError(f"새로운 Running 상태 Pod를 찾지 못했습니다 (existing={existing})")
 
     pod_name = await asyncio.to_thread(_watch_new_pod)
     return pod_name
