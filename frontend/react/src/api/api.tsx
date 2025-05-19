@@ -41,11 +41,14 @@ api.interceptors.response.use(
     );
     
     if (error.response?.status === 401) {
-      // Handle token expiration or unauthorized access
-      localStorage.clear(); // 모든 로컬 스토리지 데이터 삭제
-      alert('로그인이 만료되었습니다. 다시 로그인해주세요.');
-      window.location.href = '/login';
+      // 이미 로그인 페이지로 리다이렉트 중인지 확인
+      if (window.location.pathname !== '/login') {
+        localStorage.clear(); // 모든 로컬 스토리지 데이터 삭제
+        alert('로그인이 만료되었습니다. 다시 로그인해주세요.');
+        window.location.href = '/login';
+      }
     }
+    
     return Promise.reject(error);
   }
 );
