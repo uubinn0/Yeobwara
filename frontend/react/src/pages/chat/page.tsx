@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
-import { LogOut, Settings, Send, User, Cog, Trash2, RefreshCw, Menu, ChevronRight, MessageCircle, MoreVertical, Edit, Trash, Check, X } from "lucide-react"
+import { LogOut, Settings, Send, User, Cog, Trash2, RefreshCw, Menu, ChevronRight, MessageCircle, MoreVertical, Edit, Trash, Check, X, PlusCircle } from "lucide-react"
 import type { McpService } from "@/types/mcp"
 import api from "../../api/api"
 import ReactMarkdown from 'react-markdown'
@@ -311,7 +311,7 @@ export default function ChatPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
 
-  // 로그인 후 채팅 페이지 진입 시 자동으로 세션 생성 및 로드
+  // 로그인 후 채팅 페이지 진입 시 세션 로드
   useEffect(() => {
     const initializeSession = async () => {
       try {
@@ -321,31 +321,10 @@ export default function ChatPage() {
         // localStorage에서 이전에 선택한 세션 ID 확인
         const savedSessionId = localStorage.getItem('selectedSessionId');
         
-        // 브라우저 세션에 세션 생성 여부 확인 (세션 스토리지 사용)
-        const sessionCreated = sessionStorage.getItem('chat_session_created');
-        
         if (savedSessionId) {
           // 저장된 세션 ID가 있으면 해당 세션 선택
           console.log('저장된 세션 ID로 대화 내역 로드:', savedSessionId);
           selectChatHistory(savedSessionId);
-        } else if (!sessionCreated) {
-          // 새 세션을 생성합니다
-          const response = await api.post<CreateSessionResponse>("/api/sessions", {
-            session_name: "새 대화"
-          });
-          
-          // 새로 생성된 세션이 반환된 경우 해당 세션으로 이동
-          if (response.data && response.data.session_id) {
-            // 새 세션 선택
-            console.log('선택된 최근 세션:', response.data.session_id);
-            selectChatHistory(response.data.session_id);
-            console.log("채팅 페이지 진입 시 새 세션 생성됨:", response.data.session_id);
-            
-            // 브라우저 세션에 세션 생성 여부 저장 (브라우저 닫기 전까지 유지)
-            sessionStorage.setItem('chat_session_created', 'true');
-          } else {
-            setWelcomeMessage();
-          }
         } else if (chatHistory.length > 0) {
           // 기존 세션이 있으면 가장 최근 세션 선택
           const latestSession = chatHistory[0]; // 첫 번째 세션이 가장 최근 세션이라고 가정
@@ -354,9 +333,11 @@ export default function ChatPage() {
             selectChatHistory(latestSession.session_id);
             console.log("기존 세션 로드됨:", latestSession.session_id);
           } else {
+            // 기본 환영 메시지 표시
             setWelcomeMessage();
           }
         } else {
+          // 세션이 없으면 새 채팅 페이지 표시(임시 채팅방 상태)
           setWelcomeMessage();
         }
       } catch (error) {
@@ -427,12 +408,6 @@ export default function ChatPage() {
     e.preventDefault()
     if (!input.trim() || isLoading) return
 
-    // 세션 ID가 없는 경우 메시지를 보낼 수 없음
-    if (!selectedSessionId) {
-      alert("선택된 대화방이 없습니다. 새 대화를 시작하거나 기존 대화를 선택해주세요.");
-      return;
-    }
-
     // 사용자 메시지 추가
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -447,8 +422,38 @@ export default function ChatPage() {
     setIsLoading(true)
     
     try {
+      let sessionId = selectedSessionId;
+      
+      // 세션 ID가 없는 경우(임시 채팅방) 새 세션을 먼저 생성
+      if (!sessionId) {
+        try {
+          const createResponse = await api.post<CreateSessionResponse>("/api/sessions", {
+            session_name: "새 대화"
+          });
+          
+          if (createResponse.data && createResponse.data.session_id) {
+            // 새로 생성된 세션 ID 사용
+            sessionId = createResponse.data.session_id;
+            setSelectedSessionId(sessionId);
+            localStorage.setItem('selectedSessionId', sessionId);
+            
+            // 세션 생성 플래그 설정
+            sessionStorage.setItem('chat_session_created', 'true');
+            
+            console.log("새 세션 생성됨:", sessionId);
+          } else {
+            throw new Error("세션 생성 실패");
+          }
+        } catch (error) {
+          console.error("메시지 전송 중 세션 생성 실패:", error);
+          setIsLoading(false);
+          setErrorMessage("대화방 생성에 실패했습니다. 다시 시도해주세요.");
+          return;
+        }
+      }
+      
       // 실제 API 호출 - 새로운 엔드포인트 사용
-      const response = await api.post(`/api/sessions/${selectedSessionId}/chat`, { message: input })
+      const response = await api.post(`/api/sessions/${sessionId}/chat`, { message: input })
       console.log('채팅 응답:', response.data);
       
       // 서버에서 history 배열이 있는 경우 (새로운 응답 형식)
@@ -507,12 +512,8 @@ export default function ChatPage() {
       // 로딩 상태 종료
       setIsLoading(false)
       
-      // 첫 번째 메시지를 보냈을 때만 세션 목록을 업데이트
-      // 환영 메시지(1개) + 사용자 메시지(1개) = 2개
-      if (messages.length === 3) {
-        console.log("첫 메시지 전송 후 세션 목록 업데이트");
-        fetchChatHistory();
-      }
+      // 세션 목록 업데이트
+      fetchChatHistory();
     }
   }
 
@@ -574,26 +575,6 @@ export default function ChatPage() {
     }
   }
 
-  // 채팅 내역 초기화 함수
-  const clearChatHistory = () => {
-    // 초기 환영 메시지만 남기고 모든 메시지 삭제
-    const welcomeMessage = {
-      id: "welcome",
-      content: "안녕하세요! 무엇을 도와드릴까요?",
-      sender: "bot" as const,
-      timestamp: new Date()
-    };
-    
-    // 메시지 상태 업데이트
-    setMessages([welcomeMessage]);
-    
-    // 로컬 스토리지에서 채팅 내역 삭제
-    localStorage.removeItem('chatHistory');
-    
-    // 콘솔에 로그 출력
-    console.log("채팅 내역이 초기화되었습니다.");
-  };
-
   // MCP 서비스 목록 로드
   useEffect(() => {
     const loadServices = async () => {
@@ -626,44 +607,16 @@ export default function ChatPage() {
   }
 
   // 새로운 채팅 세션 생성 함수
-  const createNewSession = async () => {
-    try {
-      // 먼저 대화가 없는 빈 세션이 있는지 확인
-      const emptySession = chatHistory.find(session => session.message_count === 0);
-      
-      if (emptySession) {
-        console.log('빈 세션이 이미 존재합니다. 새 세션을 생성하지 않고 기존 세션을 사용합니다:', emptySession.session_id);
-        
-        // 기존의 빈 세션 ID만 설정하고 내역은 로드하지 않음
-        setSelectedSessionId(emptySession.session_id);
-        localStorage.setItem('selectedSessionId', emptySession.session_id);
-        
-        // 환영 메시지만 표시
-        setWelcomeMessage();
-        
-        return; // 함수 종료
-      }
-      
-      // 빈 세션이 없으면 새 세션 생성
-      const response = await api.post<CreateSessionResponse>("/api/sessions", {
-        session_name: "새 대화"
-      });
-      
-      // 새로 생성된 세션이 반환된 경우 해당 세션 ID 설정
-      if (response.data && response.data.session_id) {
-        // 세션 ID만 설정하고 내역은 로드하지 않음
-        setSelectedSessionId(response.data.session_id);
-        localStorage.setItem('selectedSessionId', response.data.session_id);
-        
-        // 환영 메시지 표시
-        setWelcomeMessage();
-      }
-      
-      // 세션 생성 플래그 재설정하여 다음 페이지 로드 시 다시 새 세션 생성 안되도록 함
-      sessionStorage.setItem('chat_session_created', 'true');
-    } catch (error) {
-      console.error("새 채팅 세션 생성 실패:", error);
-    }
+  const createNewSession = () => {
+    // API 요청 없이 임시 채팅방으로 전환
+    // 현재 선택된 세션 ID 초기화
+    setSelectedSessionId(null);
+    localStorage.removeItem('selectedSessionId');
+    
+    // 환영 메시지만 표시
+    setWelcomeMessage();
+    
+    console.log("임시 채팅방으로 전환됨");
   };
 
   // 채팅 내역 불러오기 함수를 컴포넌트 내부에서 직접 호출할 수 있도록 정의
@@ -745,31 +698,38 @@ export default function ChatPage() {
       <header className="fixed top-0 left-0 right-0 w-full z-50 p-4 border-b border-gray-800 bg-black">
         <div className="w-full flex justify-between items-center">
           <div className="flex items-center gap-4">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setLeftSidebarOpen(!leftSidebarOpen)}
+              className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
+              title="채팅 내역"
+            >
+              <MessageCircle className="h-5 w-5" />
+            </Button>
             {!leftSidebarOpen && (
               <Button
                 variant="outline"
                 size="icon"
-                onClick={() => setLeftSidebarOpen(!leftSidebarOpen)}
-                className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
-                title="채팅 내역"
+                onClick={() => createNewSession()}
+                className="bg-gradient-to-r from-indigo-500/20 to-purple-600/20 border-gray-700 hover:bg-gray-800 text-white"
+                title="새 채팅"
               >
-                <MessageCircle className="h-5 w-5" />
+                <PlusCircle className="h-5 w-5" />
               </Button>
             )}
-            <h1 className={`text-xl font-bold text-white transition-transform duration-300 ease-in-out ${leftSidebarOpen ? 'translate-x-64' : 'translate-x-0'}`}>여봐라</h1>
+            <h1 className={`text-xl font-bold text-white transition-transform duration-300 ease-in-out ${leftSidebarOpen ? 'translate-x-52' : 'translate-x-0'}`}>여봐라</h1>
           </div>
-          <div className="flex space-x-2">
-            {/* 대화 내역 삭제 버튼 */}
+          <div className="flex space-x-2">            
             <Button
               variant="outline"
               size="icon"
-              onClick={clearChatHistory}
+              onClick={() => setSidebarOpen(!sidebarOpen)}
               className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
-              title="대화 내역 삭제"
+              title="채팅 가이드라인"
             >
-              <Trash2 className="h-5 w-5 text-red-400" />
+              <Menu className="h-5 w-5" />
             </Button>
-            
             <Popover open={settingsOpen} onOpenChange={setSettingsOpen}>
               <PopoverTrigger asChild>
                 <Button
@@ -809,16 +769,7 @@ export default function ChatPage() {
               className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
               title="로그아웃"
             >
-              <LogOut className="h-5 w-5" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
-              title="채팅 가이드라인"
-            >
-              <Menu className="h-5 w-5" />
+              <LogOut className="h-5 w-5 text-red-400" />
             </Button>
           </div>
         </div>
@@ -836,6 +787,38 @@ export default function ChatPage() {
               opacity: 1;
               transform: scale(1);
             }
+          }
+
+          /* 스크롤바 스타일 */
+          ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+          }
+          
+          ::-webkit-scrollbar-track {
+            background: rgba(31, 31, 35, 0.5);
+            border-radius: 10px;
+          }
+          
+          ::-webkit-scrollbar-thumb {
+            background: linear-gradient(to bottom, rgba(139, 92, 246, 0.6), rgba(124, 58, 237, 0.7));
+            border-radius: 10px;
+            border: 2px solid rgba(31, 31, 35, 0.1);
+          }
+          
+          ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(to bottom, rgba(139, 92, 246, 0.8), rgba(124, 58, 237, 0.9));
+          }
+
+          /* Firefox에 대한 스크롤바 */
+          * {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(139, 92, 246, 0.6) rgba(31, 31, 35, 0.5);
+          }
+          
+          /* 스크롤 가능한 요소에 오른쪽 패딩 추가 */
+          .overflow-y-auto, .overflow-x-auto {
+            padding-right: 8px;
           }
 
           .markdown-content pre {
