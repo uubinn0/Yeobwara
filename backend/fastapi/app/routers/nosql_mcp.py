@@ -44,7 +44,7 @@ async def read_mcps(current_user: dict = Depends(get_current_user)):
             "required_env_vars": mcp.get("required_env_vars", []),
             # "env_vars_count": len(mcp.get("required_env_vars", [])),
             "is_selected": is_selected,  # 사용자가 선택한 MCP인지 여부
-            "tool_list": mcp.get("tool_list", []),
+            "tool_list": mcp.get("tool_list"),
             "git_url": mcp.get("git_url")
         })
     return result
@@ -65,7 +65,7 @@ async def read_mcp(public_id: str):
         "required_env_vars": mcp.get("required_env_vars", []),
         "created_at": mcp.get("created_at", "").isoformat() if mcp.get("created_at") else None,
         "updated_at": mcp.get("updated_at", "").isoformat() if mcp.get("updated_at") else None,
-        "tool_list": mcp.get("tool_list", []),
+        "tool_list": mcp.get("tool_list"),
         "git_url": mcp.get("git_url")
     }
 

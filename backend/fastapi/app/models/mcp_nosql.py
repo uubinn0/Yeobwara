@@ -43,17 +43,17 @@ class MCPBase(BaseModel):
     name: str
     description: Optional[str] = None
     mcp_type: str  # MCP 타입 (예: "notion", "gitlab" 등)
-    tool_list: Optional[List[str]] = None  # 사용 도구 목록
+    tool_list: Optional[str] = None  # 마크다운 형식의 도구 설명 목록
     git_url: Optional[str] = None  # Git 저장소 URL
 
 class MCPCreate(MCPBase):
     required_env_vars: Optional[List[str]] = None  # 필요한 환경변수 이름 목록
-    tool_list: Optional[List[str]] = None  # 사용 도구 목록
+    tool_list: Optional[str] = None  # 마크다운 형식의 도구 설명 목록
     git_url: Optional[str] = None  # Git 저장소 URL
 
 class MCPUpdate(MCPBase):
     required_env_vars: Optional[List[str]] = None
-    tool_list: Optional[List[str]] = None
+    tool_list: Optional[str] = None
     git_url: Optional[str] = None
 
 class MCP(MCPBase):
@@ -62,7 +62,7 @@ class MCP(MCPBase):
     required_env_vars: Optional[List[str]] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: Optional[datetime] = None
-    tool_list: Optional[List[str]] = None  # 사용 도구 목록
+    tool_list: Optional[str] = None  # 마크다운 형식의 도구 설명 목록
     git_url: Optional[str] = None  # Git 저장소 URL
     
 # MCP 환경변수 업데이트를 위한 모델
