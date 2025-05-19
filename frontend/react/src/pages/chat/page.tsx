@@ -608,6 +608,9 @@ export default function ChatPage() {
 
   // 새로운 채팅 세션 생성 함수
   const createNewSession = () => {
+    // 로딩 중일 때는 새 채팅 생성 불가
+    if (isLoading) return;
+    
     // API 요청 없이 임시 채팅방으로 전환
     // 현재 선택된 세션 ID 초기화
     setSelectedSessionId(null);
@@ -712,8 +715,9 @@ export default function ChatPage() {
                 variant="outline"
                 size="icon"
                 onClick={() => createNewSession()}
-                className="bg-gradient-to-r from-indigo-500/20 to-purple-600/20 border-gray-700 hover:bg-gray-800 text-white"
+                className={`bg-gradient-to-r from-indigo-500/20 to-purple-600/20 border-gray-700 hover:bg-gray-800 text-white ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                 title="새 채팅"
+                disabled={isLoading}
               >
                 <PlusCircle className="h-5 w-5" />
               </Button>
@@ -898,10 +902,11 @@ export default function ChatPage() {
             {/* 새 채팅 버튼 */}
             <Button
               variant="outline"
-              className="w-full bg-gradient-to-r from-indigo-500/20 to-purple-600/20 border-gray-700 hover:bg-gray-800 mb-2"
+              className={`w-full bg-gradient-to-r from-indigo-500/20 to-purple-600/20 border-gray-700 hover:bg-gray-800 mb-2 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
               onClick={() => {
                 createNewSession();
               }}
+              disabled={isLoading}
             >
               <span className="text-white">새 채팅</span>
             </Button>
