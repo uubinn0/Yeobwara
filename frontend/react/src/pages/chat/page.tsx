@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/popover"
 import { Textarea } from "@/components/ui/textarea"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
+import logo from "@/assets/logo4.svg"
 
 // 로딩 애니메이션용 CSS 스타일 추가
 const loadingDotsStyle = {
@@ -722,7 +723,11 @@ export default function ChatPage() {
                 <PlusCircle className="h-5 w-5" />
               </Button>
             )}
-            <h1 className={`text-xl font-bold text-white transition-transform duration-300 ease-in-out ${leftSidebarOpen ? 'translate-x-52' : 'translate-x-0'}`}>여봐라</h1>
+            <img 
+              src={logo} 
+              alt="여봐라" 
+              className={`h-8 transition-transform duration-300 ease-in-out ${leftSidebarOpen ? 'translate-x-52' : 'translate-x-0'}`}
+            />
           </div>
           <div className="flex space-x-2">            
             <Button
