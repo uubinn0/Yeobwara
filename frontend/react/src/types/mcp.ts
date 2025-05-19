@@ -3,6 +3,7 @@ export interface McpService {
   id: string
   name: string
   icon: string
+  description: string
   active: boolean
   is_selected: boolean
   required_env_vars: { key: string; value: string }[]

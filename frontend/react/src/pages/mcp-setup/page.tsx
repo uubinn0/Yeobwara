@@ -10,8 +10,14 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { useNavigate } from "react-router-dom"
-import { Save, X, ArrowLeft, Loader2 } from "lucide-react"
+import { Save, X, ArrowLeft, Loader2, Info } from "lucide-react"
 import "@/styles/globals.css"
 import ServiceIcon from "@/components/ServiceIcon"
 import { fetchMcpServices, saveMcpServiceSettings, toggleMcpSelection, createPod, fetchEnvironmentVariablesByService } from "@/api/mcpService"
@@ -59,6 +65,7 @@ export default function McpSetupPage() {
             id: service.public_id,
             name: service.name,
             icon: service.mcp_type, // mcp_type을 icon으로 사용
+            description: service.description, // description 추가
             active: savedService ? savedService.active : hasNoEnvVars, // 환경변수가 없으면 기본 활성화
             is_selected: service.is_selected, // 서버에서 받아온 선택 상태 그대로 사용
             required_env_vars: service.required_env_vars.map((key: string) => ({
@@ -83,14 +90,6 @@ export default function McpSetupPage() {
 
   const openServiceDialog = async (service: McpService) => {
     console.log("openServiceDialog 호출:", service.name);
-    
-    // 환경변수가 없는 경우 모달을 열지 않음
-    if (service.required_env_vars.length === 0) {
-      // 카드를 클릭한 경우 선택 상태 토글
-      console.log("환경변수 없음, 선택 상태 토글");
-      handleToggleSelection(null, service);
-      return;
-    }
     
     // 먼저 모달을 표시하고 로딩 상태 표시
     setSelectedService(service);
@@ -533,15 +532,33 @@ export default function McpSetupPage() {
                 <>
                   <ServiceIcon name={selectedService.icon} active={true} className="mr-2 h-5 w-5" />
                   {selectedService.name} 환경변수 설정
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" className="ml-2 h-5 w-5">
+                          <Info className="h-4 w-4 text-gray-400" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-[300px] p-4 bg-gray-800 border border-gray-700">
+                        <p className="text-sm text-gray-300">
+                          환경변수는 서비스가 정상적으로 작동하기 위해 필요한 설정값입니다.
+                          각 환경변수에 대한 자세한 설명은 서비스 문서를 참고해주세요.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </>
               )}
             </DialogTitle>
-            <DialogDescription className="text-gray-400">
-              이 서비스를 사용하기 위해 필요한 환경변수를 입력하세요
-            </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-4">
+          <div className="space-y-4">
+            {selectedService?.description && (
+              <div className="text-gray-400 text-sm bg-gray-800/50 p-4 rounded-lg border border-gray-700">
+                {selectedService.description}
+              </div>
+            )}
+            
             {dialogLoading ? (
               <div className="flex justify-center items-center py-8">
                 <Loader2 className="h-6 w-6 text-purple-500 animate-spin" />
@@ -550,7 +567,7 @@ export default function McpSetupPage() {
             ) : (
               selectedService?.required_env_vars.map((envVar: {key: string, value: string}, index: number) => (
                 <div key={envVar.key} className="space-y-2">
-                  <label htmlFor={envVar.key} className="text-sm font-medium text-gray-300">
+                  <label htmlFor={envVar.key} className="text-sm font-medium text-gray-300 block mb-2">
                     {envVar.key}
                   </label>
                   <Input
@@ -571,10 +588,12 @@ export default function McpSetupPage() {
               <X className="mr-2 h-4 w-4" />
               취소
             </Button>
-            <Button onClick={handleSaveEnvVars}>
-              <Save className="mr-2 h-4 w-4" />
-              저장
-            </Button>
+            {selectedService?.required_env_vars.length > 0 && (
+              <Button onClick={handleSaveEnvVars}>
+                <Save className="mr-2 h-4 w-4" />
+                저장
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
