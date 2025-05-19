@@ -1,21 +1,18 @@
 import asyncio
-from kubernetes import client
+from kubernetes import client, watch
 from app.config import NAMESPACE, AGENT_IMAGE
 
 async def deploy_agent(user_id: str, env_vars: list) -> str:
     name = f"agent-{user_id}"
-
-    # 쿠버네티스 API 호출은 비동기가 아니므로 스레드풀에서 실행
     apps_v1 = client.AppsV1Api()
     core_v1 = client.CoreV1Api()
 
-    # 디플로이먼트 생성 로직을 비동기로 실행
+    # 1) Deployment 객체 정의 (생성/업데이트 공통)
     deployment = client.V1Deployment(
         metadata=client.V1ObjectMeta(name=name, labels={"app": name}),
         spec=client.V1DeploymentSpec(
             replicas=1,
             strategy=client.V1DeploymentStrategy(
-                # type="Recreate",
                 type="RollingUpdate",
                 rolling_update=client.V1RollingUpdateDeployment(
                     max_surge=1,
@@ -38,28 +35,36 @@ async def deploy_agent(user_id: str, env_vars: list) -> str:
             )
         )
     )
-    
-    # 쿠버네티스 API 호출을 비동기로 처리
+
+    # 2) 기존 Pod 목록 스냅샷
+    existing = await asyncio.to_thread(
+        lambda: {p.metadata.name for p in core_v1.list_namespaced_pod(
+            namespace=NAMESPACE,
+            label_selector=f"app={name}"
+        ).items}
+    )
+
+    # 3) Deployment 생성 또는 교체
     try:
         await asyncio.to_thread(
-            apps_v1.replace_namespaced_deployment, 
-            name=name, 
-            namespace=NAMESPACE, 
+            apps_v1.replace_namespaced_deployment,
+            name=name,
+            namespace=NAMESPACE,
             body=deployment
         )
         first_create = False
     except client.exceptions.ApiException as e:
         if e.status == 404:
             await asyncio.to_thread(
-                apps_v1.create_namespaced_deployment, 
-                namespace=NAMESPACE, 
+                apps_v1.create_namespaced_deployment,
+                namespace=NAMESPACE,
                 body=deployment
             )
             first_create = True
         else:
             raise
 
-    # 첫 생성 시에만 Service 생성
+    # 4) 첫 생성일 때만 Service 생성
     if first_create:
         service = client.V1Service(
             metadata=client.V1ObjectMeta(name=name),
@@ -69,25 +74,27 @@ async def deploy_agent(user_id: str, env_vars: list) -> str:
                 type="ClusterIP"
             )
         )
-        try:
-            await asyncio.to_thread(
-                core_v1.create_namespaced_service, 
-                namespace=NAMESPACE, 
-                body=service
-            )
-        except client.exceptions.ApiException as e:
-            if e.status != 409:  # 409(이미 존재) 에러는 무시하고 진행
-                raise
-        
-    # # Pod 생성 확인을 위한 대기
-    await asyncio.sleep(10)  # 적절한 대기 시간 설정    
-    # # Pod 이름 조회
-    # pods = await asyncio.to_thread(
-    #     core_v1.list_namespaced_pod,
-    #     namespace=NAMESPACE,
-    #     label_selector=f"app={name}"
-    # )
-    # pod_name = pods.items[0].metadata.name if pods.items else None
-    
-    # 서비스 URL + Pod 이름 반환
-    # return {"service_url": f"http://{name}.{NAMESPACE}.svc.cluster.local", "pod_name": pod_name}
+        await asyncio.to_thread(
+            lambda: core_v1.create_namespaced_service(namespace=NAMESPACE, body=service)
+            if not any(s.metadata.name == name for s in core_v1.list_namespaced_service(namespace=NAMESPACE).items)
+            else None
+        )
+
+    # 5) Watch로 새 Pod 감지
+    def _watch_new_pod():
+        w = watch.Watch()
+        for event in w.stream(
+            core_v1.list_namespaced_pod,
+            namespace=NAMESPACE,
+            label_selector=f"app={name}",
+            timeout_seconds=60
+        ):
+            pod = event['object']
+            if event['type'] == 'ADDED' and pod.metadata.name not in existing:
+                # 준비 완료 상태까지 기다리려면 아래 조건 추가 가능
+                if pod.status.phase == "Running":
+                    w.stop()
+                    return pod.metadata.name
+
+    pod_name = await asyncio.to_thread(_watch_new_pod)
+    return pod_name
