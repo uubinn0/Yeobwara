@@ -1,8 +1,10 @@
 import asyncio
 from kubernetes import client, watch
+from datetime import datetime
 from app.config import NAMESPACE, AGENT_IMAGE
 from kubernetes import config
 
+# 클러스터 내부 설정 로드
 config.load_incluster_config()
 
 async def deploy_agent(user_id: str, env_vars: list) -> str:
@@ -16,7 +18,6 @@ async def deploy_agent(user_id: str, env_vars: list) -> str:
         spec=client.V1DeploymentSpec(
             replicas=1,
             strategy=client.V1DeploymentStrategy(
-                # type="Recreate",
                 type="RollingUpdate",
                 rolling_update=client.V1RollingUpdateDeployment(
                     max_surge=1,
@@ -25,7 +26,13 @@ async def deploy_agent(user_id: str, env_vars: list) -> str:
             ),
             selector={"matchLabels": {"app": name}},
             template=client.V1PodTemplateSpec(
-                metadata=client.V1ObjectMeta(labels={"app": name}),
+                metadata=client.V1ObjectMeta(
+                    labels={"app": name},
+                    annotations={
+                        # 롤링 업데이트 강제 트리거용 타임스탬프
+                        "redeployTimestamp": datetime.utcnow().isoformat()
+                    }
+                ),
                 spec=client.V1PodSpec(
                     containers=[
                         client.V1Container(
@@ -84,23 +91,24 @@ async def deploy_agent(user_id: str, env_vars: list) -> str:
             else None
         )
 
+    # 5) Watch로 새 Pod 감지
     def _watch_new_pod():
         w = watch.Watch()
         for event in w.stream(
             core_v1.list_namespaced_pod,
             namespace=NAMESPACE,
             label_selector=f"app={name}",
-            timeout_seconds=120,        # 필요하다면 타임아웃 늘리기
+            timeout_seconds=120,
         ):
             pod = event['object']
             pod_name = pod.metadata.name
 
-            # 기존에 없던 Pod 이름이고, Running 상태라면 바로 리턴
+            # 기존에 없던 Pod 이름이고, Running 상태라면 리턴
             if pod_name not in existing and pod.status.phase == "Running":
                 w.stop()
                 return pod_name
 
-        # 타임아웃 시 명확히 에러 내버리기
+        # 타임아웃 시 예외
         raise RuntimeError(f"새로운 Running 상태 Pod를 찾지 못했습니다 (existing={existing})")
 
     pod_name = await asyncio.to_thread(_watch_new_pod)
