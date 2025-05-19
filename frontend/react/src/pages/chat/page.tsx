@@ -1138,17 +1138,16 @@ export default function ChatPage() {
 
       {/* 서비스 가이드 모달 */}
       <Dialog open={guideModalOpen} onOpenChange={setGuideModalOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md bg-gray-900 border-gray-700 text-white">
           <DialogHeader>
-            <DialogTitle>{guideService?.name}</DialogTitle>
-            <DialogDescription>{guideService?.description}</DialogDescription>
+            <DialogTitle className="text-white">{guideService?.name}</DialogTitle>
           </DialogHeader>
           <div className="mt-4">
-            <h3 className="font-semibold mb-2">사용 가능한 명령어</h3>
-            <ul className="list-disc list-inside space-y-1">
+            <h3 className="font-semibold mb-2 text-white">사용 가능한 명령어</h3>
+            <ul className="list-disc list-inside space-y-1 text-gray-300">
               {guideService?.commands?.map((cmd: any) => (
                 <li key={cmd.name}>
-                  <span className="font-medium">{cmd.name}</span>: {cmd.description}
+                  <span className="font-medium text-white">{cmd.name}</span>: {cmd.description}
                 </li>
               ))}
             </ul>
