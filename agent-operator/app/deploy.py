@@ -15,7 +15,12 @@ async def deploy_agent(user_id: str, env_vars: list) -> str:
         spec=client.V1DeploymentSpec(
             replicas=1,
             strategy=client.V1DeploymentStrategy(
-                type="Recreate"
+                # type="Recreate",
+                type="RollingUpdate",
+                rolling_update=client.V1RollingUpdateDeployment(
+                    max_surge=1,
+                    max_unavailable=0
+                )
             ),
             selector={"matchLabels": {"app": name}},
             template=client.V1PodTemplateSpec(
@@ -73,24 +78,16 @@ async def deploy_agent(user_id: str, env_vars: list) -> str:
         except client.exceptions.ApiException as e:
             if e.status != 409:  # 409(이미 존재) 에러는 무시하고 진행
                 raise
-
-    # Deployment가 업데이트될 때까지 대기
-    for _ in range(30):  # 최대 30초 대기
-        deployment_status = await asyncio.to_thread(
-            apps_v1.read_namespaced_deployment_status,
-            name=name,
-            namespace=NAMESPACE
-        )
-        if (deployment_status.status.updated_replicas == 1 and 
-            deployment_status.status.available_replicas == 1):
-            # 새로운 Pod 이름 조회
-            pods = await asyncio.to_thread(
-                core_v1.list_namespaced_pod,
-                namespace=NAMESPACE,
-                label_selector=f"app={name}"
-            )
-            if pods.items:
-                return {"service_url": f"http://{name}.{NAMESPACE}.svc.cluster.local", "pod_name": pods.items[0].metadata.name}
-        await asyncio.sleep(1)
+        
+    # # Pod 생성 확인을 위한 대기
+    await asyncio.sleep(10)  # 적절한 대기 시간 설정    
+    # # Pod 이름 조회
+    # pods = await asyncio.to_thread(
+    #     core_v1.list_namespaced_pod,
+    #     namespace=NAMESPACE,
+    #     label_selector=f"app={name}"
+    # )
+    # pod_name = pods.items[0].metadata.name if pods.items else None
     
-    raise Exception("Deployment update timeout")
+    # 서비스 URL + Pod 이름 반환
+    # return {"service_url": f"http://{name}.{NAMESPACE}.svc.cluster.local", "pod_name": pod_name}
