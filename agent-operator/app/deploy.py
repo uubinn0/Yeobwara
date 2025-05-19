@@ -1,6 +1,9 @@
 import asyncio
 from kubernetes import client, watch
 from app.config import NAMESPACE, AGENT_IMAGE
+from kubernetes import config
+
+config.load_incluster_config()
 
 async def deploy_agent(user_id: str, env_vars: list) -> str:
     name = f"agent-{user_id}"
@@ -13,6 +16,7 @@ async def deploy_agent(user_id: str, env_vars: list) -> str:
         spec=client.V1DeploymentSpec(
             replicas=1,
             strategy=client.V1DeploymentStrategy(
+                # type="Recreate",
                 type="RollingUpdate",
                 rolling_update=client.V1RollingUpdateDeployment(
                     max_surge=1,
