@@ -18,10 +18,20 @@ spec:
       - name: operator
         image: your-dockerhub/agent-operator:1.0   # Jenkins에서 태그 갱신
         ports:
-        - containerPort: 8002
-        readinessProbe:
+        - containerPort: 8002                       # agent-operator가 실제 듣는 포트
+        readinessProbe:                            # Ready 체크
           httpGet:
             path: /health
             port: 8002
           initialDelaySeconds: 5
           periodSeconds: 5
+          timeoutSeconds: 2
+          failureThreshold: 3
+        livenessProbe:                             # Live 체크
+          httpGet:
+            path: /health
+            port: 8002
+          initialDelaySeconds: 15
+          periodSeconds: 20
+          timeoutSeconds: 2
+          failureThreshold: 3
