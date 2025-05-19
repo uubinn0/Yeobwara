@@ -191,7 +191,9 @@ async def create_mcp(mcp: MCPCreate):
         "mcp_type": mcp.mcp_type,
         "required_env_vars": mcp.required_env_vars,
         "created_at": datetime.utcnow(),
-        "updated_at": datetime.utcnow()
+        "updated_at": datetime.utcnow(),
+        "tool_list": mcp.tool_list,  # 사용 도구 목록 추가
+        "git_url": mcp.git_url  # Git URL 추가
     }
     
     await mcps.insert_one(mcp_dict)
