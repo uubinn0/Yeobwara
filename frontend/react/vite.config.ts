@@ -31,6 +31,7 @@ export default defineConfig({
       // /api로 들어오는 요청은 fastapi 컨테이너로 포워딩
       "/api": {
         target: "http://fastapi:8000",
+        // target: "https://fastapi:8000",
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path.replace(/^\/api/, ""),
