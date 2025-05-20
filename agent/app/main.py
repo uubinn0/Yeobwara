@@ -145,10 +145,8 @@ async def startup_event():
     agent = Agent(
         name="Assistant",
         instructions = f"Use the tools to achieve the task. Consider the conversation history when provided. Today's date is {date.today().isoformat()}. Answer in markdown format.",
-        # model="gpt-4.1-mini",
         model=gms_model,
         mcp_servers=servers,
-        max_tokens=32768
     )
 
 # 앱 종료 시 모든 서버 정리
@@ -183,7 +181,7 @@ async def query_agent(payload: AgentRequest):
     
     try:
         # Agent 실행
-        result = await Runner.run(agent, enhanced_text)
+        result = await Runner.run(agent, enhanced_text, max_tokens=32768)
         response = result.final_output
         
         return {"response": response}
@@ -202,5 +200,5 @@ async def query_agent_simple(payload: dict):
     if not text: 
         raise HTTPException(400, "'text' 필드가 필요합니다.")
     
-    result = await Runner.run(agent, text)
+    result = await Runner.run(agent, text, max_tokens=32768)
     return {"response": result.final_output}
