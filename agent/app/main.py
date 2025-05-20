@@ -31,7 +31,8 @@ set_default_openai_client(gms_client, use_for_tracing=False)        # 트레이�
 gms_model = OpenAIChatCompletionsModel(
     model="gpt-4.1",
     # model="o3-mini",
-    openai_client=gms_client
+    openai_client=gms_client,
+    max_tokens=32768
 )
 
 #############################################
@@ -181,7 +182,7 @@ async def query_agent(payload: AgentRequest):
     
     try:
         # Agent 실행
-        result = await Runner.run(agent, enhanced_text, max_tokens=32768)
+        result = await Runner.run(agent, enhanced_text)
         response = result.final_output
         
         return {"response": response}
@@ -200,5 +201,5 @@ async def query_agent_simple(payload: dict):
     if not text: 
         raise HTTPException(400, "'text' 필드가 필요합니다.")
     
-    result = await Runner.run(agent, text, max_tokens=32768)
+    result = await Runner.run(agent, text)
     return {"response": result.final_output}
