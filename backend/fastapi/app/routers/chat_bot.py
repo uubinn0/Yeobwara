@@ -284,7 +284,7 @@ async def session_chat(
             logger.error(f"kubectl 명령 실패 - 반환 코드: {result['returncode']}")
             logger.error(f"오류 내용: {result['stderr']}")
             return ConversationalChatResponse(
-                response=f"명령 실행 실패: Agent와 통신할 수 없습니다.",
+                response=f"MCP 서버가 현재 준비 중입니다. 잠시 후 다시 시도해주세요.",
                 timestamp=datetime.now(),
                 session_id=session_id,
                 session_name=session_summary.get("session_name", "알 수 없음"),
