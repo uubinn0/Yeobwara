@@ -40,6 +40,13 @@ async def deploy_agent(user_id: str, env_vars: list) -> str:
                             image=AGENT_IMAGE,
                             ports=[client.V1ContainerPort(container_port=8002)],
                             env=[client.V1EnvVar(name=e["name"], value=e["value"]) for e in env_vars],
+                            readiness_probe=client.V1Probe(
+                                http_get=client.V1HTTPGetAction(path="/health", port=8002),
+                                initial_delay_seconds=5,
+                                period_seconds=5,
+                                timeout_seconds=2,
+                                failure_threshold=3
+                            )
                         )
                     ]
                 )
@@ -91,25 +98,27 @@ async def deploy_agent(user_id: str, env_vars: list) -> str:
             else None
         )
 
-    # 5) Watch로 새 Pod 감지
+    # 5) Watch로 새 Pod 감지 (컨테이너 Ready 상태 기반)
     def _watch_new_pod():
         w = watch.Watch()
         for event in w.stream(
             core_v1.list_namespaced_pod,
             namespace=NAMESPACE,
             label_selector=f"app={name}",
-            timeout_seconds=120,
+            timeout_seconds=180,
         ):
             pod = event['object']
             pod_name = pod.metadata.name
 
-            # 기존에 없던 Pod 이름이고, Running 상태라면 리턴
-            if pod_name not in existing and pod.status.phase == "Running":
-                w.stop()
-                return pod_name
+            # 기존에 없던 Pod 이름이고, 컨테이너가 Ready 상태라면 리턴
+            if pod_name not in existing:
+                for cs in (pod.status.container_statuses or []):
+                    if cs.name == "agent" and cs.ready:
+                        w.stop()
+                        return pod_name
 
         # 타임아웃 시 예외
-        raise RuntimeError(f"새로운 Running 상태 Pod를 찾지 못했습니다 (existing={existing})")
+        raise RuntimeError(f"새로운 Ready 상태 Pod를 찾지 못했습니다 (existing={existing})")
 
     pod_name = await asyncio.to_thread(_watch_new_pod)
     return pod_name
