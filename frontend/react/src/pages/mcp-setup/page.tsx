@@ -568,6 +568,45 @@ export default function McpSetupPage() {
                               </a>
                               를 참고해주세요.
                             </>
+                          ) : selectedService?.icon === 'kakao-map' ? (
+                            <>
+                              각 환경변수에 대한 자세한 설명은{" "}
+                              <a 
+                                href="https://www.notion.so/Kakao-Map-1f53218fb43580dfa486f6589843fb83"
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-purple-400 hover:text-purple-300 underline"
+                              >
+                                카카오맵 서비스 문서
+                              </a>
+                              를 참고해주세요.
+                            </>
+                          ) : selectedService?.icon === 'figma' ? (
+                            <>
+                              각 환경변수에 대한 자세한 설명은{" "}
+                              <a 
+                                href="https://www.notion.so/Figma-1f93218fb43580d89b19e7936920635d"
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-purple-400 hover:text-purple-300 underline"
+                              >
+                                Figma 서비스 문서
+                              </a>
+                              를 참고해주세요.
+                            </>
+                          ) : selectedService?.icon === 'dart-mcp' ? (
+                            <>
+                              각 환경변수에 대한 자세한 설명은{" "}
+                              <a 
+                                href="https://www.notion.so/Dart-1f93218fb43580a7a8b5f444ca43a017"
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-purple-400 hover:text-purple-300 underline"
+                              >
+                                DART 서비스 문서
+                              </a>
+                              를 참고해주세요.
+                            </>
                           ) : (
                             "각 환경변수에 대한 자세한 설명은 서비스 문서를 참고해주세요."
                           )}
