@@ -3,11 +3,11 @@ import PaperSearchIcon from '@/assets/icons/papersearch.svg?react'
 import AirbnbIcon from '@/assets/icons/airbnb.svg?react'
 import NotionIcon from '@/assets/icons/notion.svg?react'
 import GitlabIcon from '@/assets/icons/gitlab.svg?react'
-// import DuckDuckGoSearchIcon from '@/assets/icons/duckduckgo-search.svg?react'
+import DuckDuckGoSearchIcon from '@/assets/icons/duckduckgo-search.svg?react'
 // import DartMcpIcon from '@/assets/icons/dart-mcp.svg?react'
 import FigmaIcon from '@/assets/icons/figma.svg?react'
 import KakaoMapIcon from '@/assets/icons/kakaomap.svg?react'
-// import SpellCheckIcon from '@/assets/icons/spell-check.svg?react'
+import SpellCheckIcon from '@/assets/icons/spell-check.svg?react'
 export default function ServiceIcon({ name, active, className = "h-8 w-8" }: { name: string; active: boolean; className?: string }) {
   const color = active ? "text-white" : "text-gray-500"
   
@@ -19,10 +19,10 @@ export default function ServiceIcon({ name, active, className = "h-8 w-8" }: { n
       return <GitlabIcon className={`${className} ${color}`} />
     case "notion":
       return <NotionIcon className={`${className} ${color}`} />
-    // case "duckduckgo-search":
-    //   return <DuckDuckGoSearchIcon className={`${className} ${color}`} />
-    // case "korean-spell-checker":
-    //   return <SpellCheckIcon className={`${className} ${color}`} />
+    case "duckduckgo-search":
+      return <DuckDuckGoSearchIcon className={`${className} ${color}`} />
+    case "korean-spell-checker":
+      return <SpellCheckIcon className={`${className} ${color}`} />
     case "airbnb":
       return <AirbnbIcon className={`${className} ${color}`} />
     case "kakao-map":
