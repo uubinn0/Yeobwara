@@ -1,31 +1,3 @@
-# apiVersion: apps/v1
-# kind: Deployment
-# metadata:
-#   name: agent-operator
-#   namespace: agent-env
-# spec:
-#   replicas: 1
-#   selector:
-#     matchLabels:
-#       app: agent-operator
-#   template:
-#     metadata:
-#       labels:
-#         app: agent-operator
-#     spec:
-#       serviceAccountName: agent-operator
-#       containers:
-#       - name: operator
-#         image: your-dockerhub/agent-operator:1.0   # Jenkins에서 태그 갱신
-#         ports:
-#         - containerPort: 8002
-#         readinessProbe:
-#           httpGet:
-#             path: /health
-#             port: 8002
-#           initialDelaySeconds: 5
-#           periodSeconds: 5
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -45,22 +17,11 @@ spec:
       containers:
       - name: operator
         image: your-dockerhub/agent-operator:1.0   # Jenkins에서 태그 갱신
-        imagePullPolicy: Always                     # 매번 최신 이미지를 당겨 쓰도록
         ports:
-        - containerPort: 8002                       # 컨테이너가 리슨하는 포트
-        readinessProbe:                            # 트래픽 받을 준비가 됐는지 체크
+        - containerPort: 8002
+        readinessProbe:
           httpGet:
             path: /health
             port: 8002
           initialDelaySeconds: 5
           periodSeconds: 5
-          timeoutSeconds: 2
-          failureThreshold: 3
-        livenessProbe:                             # 살아있는지 주기적으로 체크
-          httpGet:
-            path: /health
-            port: 8002
-          initialDelaySeconds: 15
-          periodSeconds: 20
-          timeoutSeconds: 2
-          failureThreshold: 3
