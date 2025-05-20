@@ -170,6 +170,18 @@ const markdownStyles = {
   },
 }
 
+interface McpServiceResponse {
+  public_id: string;
+  name: string;
+  description: string;
+  mcp_type: string;
+  active: boolean;
+  is_selected: boolean;
+  required_env_vars: string[];
+  tool_list?: string;
+  git_url?: string;
+}
+
 export default function ChatPage() {
   const navigate = useNavigate()
   const [input, setInput] = useState("")
@@ -182,7 +194,7 @@ export default function ChatPage() {
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true)
   const [selectedService, setSelectedService] = useState<string | null>(null)
   const [guideModalOpen, setGuideModalOpen] = useState(false);
-  const [guideService, setGuideService] = useState<McpService | null>(null);
+  const [guideService, setGuideService] = useState<McpService & { git_url?: string } | null>(null);
   const [chatHistory, setChatHistory] = useState<ChatSession[]>([]);
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
   const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
@@ -589,7 +601,9 @@ export default function ChatPage() {
           icon: service.mcp_type,
           active: service.active ?? false,
           is_selected: service.is_selected ?? false,
-          required_env_vars: (service.required_env_vars || []).map((key: string) => ({ key, value: "" }))
+          required_env_vars: (service.required_env_vars || []).map((key: string) => ({ key, value: "" })),
+          tool_list: service.tool_list,
+          git_url: service.git_url,
         }))
         setServices(formatted)
       } catch (error) {
@@ -600,12 +614,29 @@ export default function ChatPage() {
   }, [])
 
   // 서비스 선택 시 모달로 가이드 표시
-  const handleServiceSelect = (serviceId: string) => {
-    const service = services.find(s => s.id === serviceId)
-    if (!service) return
-    setGuideService(service)
-    setGuideModalOpen(true)
-  }
+  const handleServiceSelect = async (serviceId: string) => {
+    try {
+      const response = await api.get<McpServiceResponse>(`/api/mcps/${serviceId}`);
+      const service = response.data;
+      
+      if (service) {
+        setGuideService({
+          id: service.public_id,
+          name: service.name,
+          description: service.description,
+          icon: service.mcp_type,
+          active: service.active ?? false,
+          is_selected: service.is_selected ?? false,
+          required_env_vars: (service.required_env_vars || []).map((key: string) => ({ key, value: "" })),
+          tool_list: service.tool_list,
+          git_url: service.git_url,
+        });
+        setGuideModalOpen(true);
+      }
+    } catch (error) {
+      console.error("서비스 정보 로드 실패:", error);
+    }
+  };
 
   // 새로운 채팅 세션 생성 함수
   const createNewSession = () => {
@@ -689,6 +720,13 @@ export default function ChatPage() {
       alert("세션 삭제에 실패했습니다.");
     }
   };
+
+  // 안전하게 tool_list와 git_url을 처리
+  const toolListString = Array.isArray(guideService?.tool_list)
+    ? ""
+    : (guideService?.tool_list ?? "");
+  const hasToolList = typeof toolListString === "string" && toolListString.trim() !== "";
+  const hasGitUrl = typeof guideService?.git_url === "string" && guideService.git_url.trim() !== "";
 
   return (
     <div className="min-h-screen bg-black flex flex-col relative">
@@ -1045,7 +1083,6 @@ export default function ChatPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium">{service.name}</p>
-                    <p className="text-xs text-gray-400 mt-1 line-clamp-1">{service.description}</p>
                   </div>
                 </div>
               </div>
@@ -1138,19 +1175,57 @@ export default function ChatPage() {
 
       {/* 서비스 가이드 모달 */}
       <Dialog open={guideModalOpen} onOpenChange={setGuideModalOpen}>
-        <DialogContent className="max-w-md bg-gray-900 border-gray-700 text-white">
+        <DialogContent className="!max-w-[700px] bg-gray-900 border-gray-700 text-white">
           <DialogHeader>
             <DialogTitle className="text-white">{guideService?.name}</DialogTitle>
           </DialogHeader>
-          <div className="mt-4">
-            <h3 className="font-semibold mb-2 text-white">사용 가능한 명령어</h3>
-            <ul className="list-disc list-inside space-y-1 text-gray-300">
-              {guideService?.commands?.map((cmd: any) => (
-                <li key={cmd.name}>
-                  <span className="font-medium text-white">{cmd.name}</span>: {cmd.description}
-                </li>
-              ))}
-            </ul>
+          <div className="mt-4 max-h-[60vh] overflow-y-auto pr-2">
+            {(!hasToolList && !hasGitUrl) ? (
+              <div className="text-gray-400 text-center py-8">가이드라인을 준비 중입니다.</div>
+            ) : (
+              <>
+                {hasGitUrl && (
+                  <div className="mb-4">
+                    <a
+                      href={guideService.git_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-400 underline hover:text-blue-300 break-all"
+                    >
+                      해당 MCP github으로 이동하기
+                    </a>
+                  </div>
+                )}
+                {hasToolList && (
+                  <div className="markdown-content">
+                    <ReactMarkdown 
+                      remarkPlugins={[remarkGfm]}
+                      components={{
+                        h1: ({node, ...props}) => <h1 className="text-2xl font-bold mb-4 text-white" {...props} />,
+                        h2: ({node, ...props}) => <h2 className="text-xl font-bold mb-3 text-white" {...props} />,
+                        h3: ({node, ...props}) => <h3 className="text-lg font-bold mb-2 text-white" {...props} />,
+                        p: ({node, ...props}) => <p className="mb-2 text-gray-300" {...props} />,
+                        ul: ({node, ...props}) => <ul className="list-disc list-inside mb-2 text-gray-300" {...props} />,
+                        ol: ({node, ...props}) => <ol className="list-decimal list-inside mb-2 text-gray-300" {...props} />,
+                        li: ({node, ...props}) => <li className="mb-1" {...props} />,
+                        code: ({node, inline, ...props}) => 
+                          inline ? 
+                            <code className="bg-gray-800 rounded px-1 py-0.5 text-sm" {...props} /> :
+                            <code className="block bg-gray-800 rounded p-2 my-2 text-sm overflow-x-auto" {...props} />,
+                        pre: ({node, ...props}) => <pre className="bg-gray-800 rounded p-2 my-2 overflow-x-auto" {...props} />,
+                        a: ({node, ...props}) => <a className="text-purple-400 hover:text-purple-300 underline" {...props} />,
+                        blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-gray-600 pl-4 my-2 text-gray-400" {...props} />,
+                        table: ({node, ...props}) => <table className="border-collapse w-full my-2" {...props} />,
+                        th: ({node, ...props}) => <th className="border border-gray-600 px-2 py-1 bg-gray-800" {...props} />,
+                        td: ({node, ...props}) => <td className="border border-gray-600 px-2 py-1" {...props} />,
+                      }}
+                    >
+                      {toolListString}
+                    </ReactMarkdown>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </DialogContent>
       </Dialog>
