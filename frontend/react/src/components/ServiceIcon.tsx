@@ -7,7 +7,7 @@ import DuckDuckGoSearchIcon from '@/assets/icons/duckduckgo.svg?react'
 // import DartMcpIcon from '@/assets/icons/dart-mcp.svg?react'
 import FigmaIcon from '@/assets/icons/figma.svg?react'
 import KakaoMapIcon from '@/assets/icons/kakaomap.svg?react'
-import SpellCheckIcon from '@/assets/icons/korean-spell-check.svg?react'
+import SpellCheckIcon from '@/assets/icons/korean-spell-checker.svg?react'
 export default function ServiceIcon({ name, active, className = "h-8 w-8" }: { name: string; active: boolean; className?: string }) {
   const color = active ? "text-white" : "text-gray-500"
   
