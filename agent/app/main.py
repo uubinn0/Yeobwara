@@ -48,7 +48,7 @@ class AgentRequest(BaseModel):
 MCP_SERVER_CONFIG = {
     "notion": {
         "type": "stdio",
-        "params": {"command": "mcp-notion-server", "args": ["--enabledTools=notion_retrieve_block,notion_retrieve_block_children,notion_append_block_children"], 
+        "params": {"command": "mcp-notion-server", "args": ["--enabledTools=notion_retrieve_block,notion_retrieve_block_children,notion_append_block_children,notion_retrieve_page"], 
                    "env": {"NOTION_API_TOKEN": os.getenv("NOTION_API_TOKEN", "")}}
     },
     "gitlab": {
