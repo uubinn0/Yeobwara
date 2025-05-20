@@ -1,4 +1,4 @@
-import subprocess,json
+import asyncio, subprocess, json
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import Dict, Any, List, Optional
 from pydantic import BaseModel
@@ -12,6 +12,43 @@ from models.mcp_nosql import (
 from core.config import settings
 from crud.conversation import conversation_manager
 import logging
+
+# 비동기적으로 kubectl 명령을 실행하는 함수
+async def run_kubectl_command(cmd, timeout=60):
+    """비동기적으로 kubectl 명령을 실행합니다."""
+    logger.info(f"실행 명령어: {' '.join(cmd)}")
+    
+    try:
+        # 명령 실행을 위한 프로세스 생성
+        process = await asyncio.create_subprocess_exec(
+            *cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+        
+        # 타임아웃 적용하여 완료 대기
+        try:
+            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=timeout)
+        except asyncio.TimeoutError:
+            # 타임아웃 발생 시 프로세스 종료 시도
+            try:
+                process.kill()
+            except:
+                pass
+            logger.error(f"kubectl 명령 타임아웃")
+            raise asyncio.TimeoutError("명령 실행 시간이 초과되었습니다.")
+        
+        # 결과 반환
+        return {
+            "returncode": process.returncode,
+            "stdout": stdout.decode('utf-8'),
+            "stderr": stderr.decode('utf-8')
+        }
+    except Exception as e:
+        if isinstance(e, asyncio.TimeoutError):
+            raise
+        logger.exception(f"kubectl 명령 실행 중 오류: {str(e)}")
+        raise RuntimeError(f"명령 실행 중 오류 발생: {str(e)}")
 
 # 커스텀 JSON 인코더
 class DateTimeEncoder(json.JSONEncoder):
@@ -231,8 +268,9 @@ async def session_chat(
         ]
         
         try:
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
-        except subprocess.TimeoutExpired:
+            # 비동기 함수로 kubectl 명령 실행
+            result = await run_kubectl_command(cmd, timeout=60)
+        except asyncio.TimeoutError:
             logger.error(f"kubectl 명령 타임아웃 - 사용자: {user_id}, 세션: {session_id}")
             return ConversationalChatResponse(
                 response="요청 처리 시간이 초과되었습니다. 다시 시도해주세요.",
@@ -242,9 +280,9 @@ async def session_chat(
                 had_context=True
             )
         
-        if result.returncode != 0:
-            logger.error(f"kubectl 명령 실패 - 반환 코드: {result.returncode}")
-            logger.error(f"오류 내용: {result.stderr}")
+        if result["returncode"] != 0:
+            logger.error(f"kubectl 명령 실패 - 반환 코드: {result['returncode']}")
+            logger.error(f"오류 내용: {result['stderr']}")
             return ConversationalChatResponse(
                 response=f"명령 실행 실패: Agent와 통신할 수 없습니다.",
                 timestamp=datetime.now(),
@@ -255,9 +293,9 @@ async def session_chat(
         
         # 응답 처리
         try:
-            if result.stdout.strip():
-                response_data = json.loads(result.stdout)
-                bot_response = response_data.get("response", result.stdout.strip())
+            if result["stdout"].strip():
+                response_data = json.loads(result["stdout"])
+                bot_response = response_data.get("response", result["stdout"].strip())
                 
                 # 응답에 에러가 포함되어 있는지 확인
                 if "error" in response_data.get("error", "").lower() or "Error" in bot_response:
@@ -291,15 +329,15 @@ async def session_chat(
                     ]
                     
                     try:
-                        error_result = subprocess.run(error_cmd, capture_output=True, text=True, timeout=30)
-                        if error_result.returncode == 0 and error_result.stdout.strip():
-                            error_response_data = json.loads(error_result.stdout)
+                        error_result = await run_kubectl_command(error_cmd, timeout=30)
+                        if error_result["returncode"] == 0 and error_result["stdout"].strip():
+                            error_response_data = json.loads(error_result["stdout"])
                             summarized_error = error_response_data.get("response", bot_response)
                             logger.info(f"에러 메시지 요약 완료: user_id={user_id}")
                             bot_response = summarized_error
                         else:
                             logger.warning(f"에러 요약 실패, 원본 메시지 사용: user_id={user_id}")
-                    except (subprocess.TimeoutExpired, json.JSONDecodeError) as e:
+                    except Exception as e:
                         logger.warning(f"에러 요약 중 오류, 원본 메시지 사용: {str(e)}")
                         
             else:
@@ -307,7 +345,7 @@ async def session_chat(
                 bot_response = "죄송합니다. 응답을 생성할 수 없었습니다. 다시 시도해 주세요."
         except json.JSONDecodeError as e:
             logger.error(f"JSON 파싱 오류: {e}")
-            logger.error(f"원본 응답: {result.stdout}")
+            logger.error(f"원본 응답: {result['stdout']}")
             bot_response = "Agent 응답을 파싱할 수 없습니다."
         
         # 세션에 대화 저장

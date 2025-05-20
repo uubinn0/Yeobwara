@@ -1,4 +1,4 @@
-import subprocess, json, os, asyncio, logging
+import json, os, asyncio, logging
 from typing import Dict, Any
 from crud.nosql import get_user_by_id, update_pod_name, get_env_vars, get_user_selected_mcps
 from core.config import settings
@@ -8,6 +8,57 @@ logger = logging.getLogger(__name__)
 
 # Pod 배포 서버 주소 설정
 DEPLOY_SERVER_URL = f"{settings.DEPLOY_SERVER_URL}/deploy"
+
+# 비동기적으로 cmd 명령어를 실행하는 유틸리티 함수
+async def run_command(cmd, timeout=60):
+    """
+    비동기적으로 명령어를 실행하고 결과를 반환합니다.
+    
+    Args:
+        cmd: 실행할 명령어 리스트
+        timeout: 명령 실행 타임아웃 (초)
+        
+    Returns:
+        Dict: returncode, stdout, stderr를 포함하는 딕셔너리
+    """
+    try:
+        # 프로세스 생성
+        process = await asyncio.create_subprocess_exec(
+            *cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+        
+        # 타임아웃 설정하여 실행 대기
+        try:
+            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=timeout)
+            
+            return {
+                "returncode": process.returncode,
+                "stdout": stdout.decode('utf-8'),
+                "stderr": stderr.decode('utf-8')
+            }
+        except asyncio.TimeoutError:
+            # 타임아웃 발생 시 프로세스 종료 시도
+            try:
+                process.kill()
+            except:
+                pass
+            
+            logger.error(f"명령 실행 타임아웃: {' '.join(cmd)}")
+            return {
+                "returncode": -1,
+                "stdout": "",
+                "stderr": "명령 실행 시간이 초과되었습니다."
+            }
+    
+    except Exception as e:
+        logger.exception(f"명령 실행 중 오류: {str(e)}")
+        return {
+            "returncode": -1,
+            "stdout": "",
+            "stderr": f"명령 실행 오류: {str(e)}"
+        }
 
 async def create_pod(user_id: str) -> Dict[str, Any]:
     """
@@ -87,20 +138,20 @@ async def create_pod(user_id: str) -> Dict[str, Any]:
         ]
         
         # 명령어 실행
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        result = await run_command(cmd, timeout=60)
         
         # 결과 처리
-        if result.returncode != 0:
-            logger.error(f"Pod 생성 중 오류 발생 - 사용자: {user_id}, 오류: {result.stderr}")
+        if result["returncode"] != 0:
+            logger.error(f"Pod 생성 중 오류 발생 - 사용자: {user_id}, 오류: {result['stderr']}")
             return {
                 "success": False, 
-                "message": f"Pod 생성 중 오류 발생: {result.stderr}",
+                "message": f"Pod 생성 중 오류 발생: {result['stderr']}",
                 "pod_name": None
             }
         
         # 응답에서 pod_name 추출
         try:            
-            response_data = json.loads(result.stdout)
+            response_data = json.loads(result["stdout"])
             pod_name = response_data.get("pod_name")
             
             if pod_name:
@@ -112,7 +163,7 @@ async def create_pod(user_id: str) -> Dict[str, Any]:
                 else:
                     logger.info(f"pod_name 업데이트 성공 - 사용자: {user_id}, Pod: {pod_name}")
             else:
-                logger.warning(f"Pod 생성 응답에 pod_name이 없음 - 사용자: {user_id}, 응답: {result.stdout}")
+                logger.warning(f"Pod 생성 응답에 pod_name이 없음 - 사용자: {user_id}, 응답: {result['stdout']}")
             
             return {
                 "success": True,
@@ -120,10 +171,10 @@ async def create_pod(user_id: str) -> Dict[str, Any]:
                 "message": "Pod가 성공적으로 생성되었습니다."
             }
         except json.JSONDecodeError:
-            logger.error(f"Pod 생성 응답 파싱 오류 - 사용자: {user_id}, 응답: {result.stdout}")
+            logger.error(f"Pod 생성 응답 파싱 오류 - 사용자: {user_id}, 응답: {result['stdout']}")
             return {
                 "success": False, 
-                "message": f"Pod 생성 응답을 파싱할 수 없습니다: {result.stdout}",
+                "message": f"Pod 생성 응답을 파싱할 수 없습니다: {result['stdout']}",
                 "pod_name": None
             }
     
