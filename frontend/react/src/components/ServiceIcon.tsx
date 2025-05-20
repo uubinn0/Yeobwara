@@ -3,11 +3,11 @@ import PaperSearchIcon from '@/assets/icons/papersearch.svg?react'
 import AirbnbIcon from '@/assets/icons/airbnb.svg?react'
 import NotionIcon from '@/assets/icons/notion.svg?react'
 import GitlabIcon from '@/assets/icons/gitlab.svg?react'
-import DuckDuckGoSearchIcon from '@/assets/icons/duckduckgo-search.svg?react'
+import DuckDuckGoSearchIcon from '@/assets/icons/duckduckgo.svg?react'
 // import DartMcpIcon from '@/assets/icons/dart-mcp.svg?react'
 import FigmaIcon from '@/assets/icons/figma.svg?react'
 import KakaoMapIcon from '@/assets/icons/kakaomap.svg?react'
-import SpellCheckIcon from '@/assets/icons/spell-check.svg?react'
+import SpellCheckIcon from '@/assets/icons/korean-spell-check.svg?react'
 export default function ServiceIcon({ name, active, className = "h-8 w-8" }: { name: string; active: boolean; className?: string }) {
   const color = active ? "text-white" : "text-gray-500"
   
