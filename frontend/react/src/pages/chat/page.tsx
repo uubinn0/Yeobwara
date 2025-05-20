@@ -1175,7 +1175,7 @@ export default function ChatPage() {
 
       {/* 서비스 가이드 모달 */}
       <Dialog open={guideModalOpen} onOpenChange={setGuideModalOpen}>
-        <DialogContent className="max-w-md bg-gray-900 border-gray-700 text-white">
+        <DialogContent className="!max-w-[700px] bg-gray-900 border-gray-700 text-white">
           <DialogHeader>
             <DialogTitle className="text-white">{guideService?.name}</DialogTitle>
           </DialogHeader>
