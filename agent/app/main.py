@@ -29,8 +29,8 @@ set_default_openai_client(gms_client, use_for_tracing=False)        # 트레이�
 
 # gms_client 를 사용한 모델 지정 
 gms_model = OpenAIChatCompletionsModel(
-    # model="gpt-4.1",
-    model="o3-mini",
+    model="gpt-4.1",
+    # model="o3-mini",
     openai_client=gms_client
 )
 
