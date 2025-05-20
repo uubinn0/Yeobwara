@@ -2,6 +2,7 @@ import os
 from fastapi import FastAPI, HTTPException
 from agents import Agent, Runner, set_default_openai_client, OpenAIChatCompletionsModel
 from agents.mcp.server import MCPServerStdio
+from agents.model_settings import ModelSettings
 from openai import AsyncOpenAI
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
@@ -32,7 +33,7 @@ gms_model = OpenAIChatCompletionsModel(
     model="gpt-4.1",
     # model="o3-mini",
     openai_client=gms_client,
-    max_tokens=32768
+    settings=ModelSettings(max_tokens=32768)
 )
 
 #############################################
