@@ -542,7 +542,35 @@ export default function McpSetupPage() {
                       <TooltipContent className="max-w-[300px] p-4 bg-gray-800 border border-gray-700">
                         <p className="text-sm text-gray-300">
                           환경변수는 서비스가 정상적으로 작동하기 위해 필요한 설정값입니다.
-                          각 환경변수에 대한 자세한 설명은 서비스 문서를 참고해주세요.
+                          {selectedService?.icon === 'notion' ? (
+                            <>
+                              각 환경변수에 대한 자세한 설명은{" "}
+                              <a 
+                                href="https://www.notion.so/nimoot/Notion-1ee5a5a7520d802a91e4d790e5af9e49?pvs=4"
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-purple-400 hover:text-purple-300 underline"
+                              >
+                                Notion 서비스 문서
+                              </a>
+                              를 참고해주세요.
+                            </>
+                          ) : selectedService?.icon === 'gitlab' ? (
+                            <>
+                              각 환경변수에 대한 자세한 설명은{" "}
+                              <a 
+                                href="https://www.notion.so/nimoot/Gitlab-1f15a5a7520d806fb059e37af9d895ef?pvs=4"
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-purple-400 hover:text-purple-300 underline"
+                              >
+                                GitLab 서비스 문서
+                              </a>
+                              를 참고해주세요.
+                            </>
+                          ) : (
+                            "각 환경변수에 대한 자세한 설명은 서비스 문서를 참고해주세요."
+                          )}
                         </p>
                       </TooltipContent>
                     </Tooltip>
