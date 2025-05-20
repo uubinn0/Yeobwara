@@ -21,7 +21,7 @@ async def deploy_agent(user_id: str, env_vars: list) -> str:
                 type="RollingUpdate",
                 rolling_update=client.V1RollingUpdateDeployment(
                     max_surge=1,
-                    max_unavailable=0
+                    max_unavailable=1
                 )
             ),
             selector={"matchLabels": {"app": name}},
