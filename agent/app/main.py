@@ -147,7 +147,8 @@ async def startup_event():
         instructions = f"Use the tools to achieve the task. Consider the conversation history when provided. Today's date is {date.today().isoformat()}. Answer in markdown format.",
         # model="gpt-4.1-mini",
         model=gms_model,
-        mcp_servers=servers
+        mcp_servers=servers,
+        max_tokens=32768
     )
 
 # 앱 종료 시 모든 서버 정리
