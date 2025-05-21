@@ -105,7 +105,7 @@ export default function MyPage() {
         new_password: newPassword
       })
       
-      console.log("비밀번호 변경 성공:", response)
+      // console.log("비밀번호 변경 성공:", response)
       
       // 성공 메시지 표시
       alert("비밀번호가 성공적으로 변경되었습니다")
@@ -116,7 +116,7 @@ export default function MyPage() {
       setConfirmPassword("")
       setPasswordError("")
     } catch (error: any) {
-      console.error('Profile update failed:', error)
+      // console.error('Profile update failed:', error)
       
       // 서버 응답에 따른 오류 메시지 처리
       if (error.response) {
@@ -124,7 +124,7 @@ export default function MyPage() {
         const errorDetail = error.response.data?.detail
         
         if (errorDetail) {
-          console.log("에러 상세 정보:", errorDetail)
+          // console.log("에러 상세 정보:", errorDetail)
           
           // detail을 직접 표시
           setPasswordError(errorDetail)
@@ -152,7 +152,7 @@ export default function MyPage() {
       localStorage.removeItem('chatHistory')
       navigate("/")
     } catch (error) {
-      console.error('Account deletion failed:', error)
+      // console.error('Account deletion failed:', error)
       // 에러 처리 로직 추가
     }
   }
