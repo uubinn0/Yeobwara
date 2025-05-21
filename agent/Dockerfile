@@ -26,10 +26,6 @@ RUN npm install -g figma-developer-mcp
 RUN git clone https://github.com/openags/paper-search-mcp.git /srv/paper-search-mcp
 WORKDIR /srv/paper-search-mcp
 RUN pip install --no-cache-dir .
-# 체스 서버 소스 클론 후 설치
-# RUN git clone https://github.com/jiayao/mcp-chess.git /srv/mcp-chess
-# WORKDIR /srv/mcp-chess
-# RUN pip install --no-cache-dir .
 # dart 서버 소스 클론 후 설치
 RUN git clone https://github.com/2geonhyup/dart-mcp.git /srv/dart-mcp
 WORKDIR /srv/dart-mcp
