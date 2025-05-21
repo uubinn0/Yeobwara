@@ -409,6 +409,43 @@ export default function McpSetupPage() {
         <div className="twinkling"></div>
       </div>
 
+      {/* 스크롤바 스타일 */}
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          /* 스크롤바 스타일 */
+          ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+          }
+          
+          ::-webkit-scrollbar-track {
+            background: rgba(31, 31, 35, 0.5);
+            border-radius: 10px;
+          }
+          
+          ::-webkit-scrollbar-thumb {
+            background: linear-gradient(to bottom, rgba(139, 92, 246, 0.6), rgba(124, 58, 237, 0.7));
+            border-radius: 10px;
+            border: 2px solid rgba(31, 31, 35, 0.1);
+          }
+          
+          ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(to bottom, rgba(139, 92, 246, 0.8), rgba(124, 58, 237, 0.9));
+          }
+
+          /* Firefox에 대한 스크롤바 */
+          * {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(139, 92, 246, 0.6) rgba(31, 31, 35, 0.5);
+          }
+          
+          /* 스크롤 가능한 요소에 오른쪽 패딩 추가 */
+          .overflow-y-auto, .overflow-x-auto {
+            padding-right: 8px;
+          }
+        `
+      }} />
+
       {/* 채팅으로 돌아가기 버튼 */}
       <Button 
         variant="ghost" 
