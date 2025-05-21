@@ -4,7 +4,7 @@ import type { AxiosRequestConfig } from 'axios';
 // const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
 // const baseURL = import.meta.env.VITE_API_BASE || "https://k12b107.p.ssafy.io";
 const baseURL = import.meta.env.VITE_API_BASE || "https://k12b107.p.ssafy.io/api";
-console.log('API Base URL:', baseURL);
+// console.log('API Base URL:', baseURL);
 const api = axios.create({
   baseURL,
   headers: {
@@ -30,15 +30,15 @@ api.interceptors.request.use(
 // Response interceptor
 api.interceptors.response.use(
   (response) => {
-    console.log('API 응답 성공:', response.config.url, response.status);
+    // console.log('API 응답 성공:', response.config.url, response.status);
     return response;
   },
   async (error) => {
-    console.error('API 응답 오류:', 
-      error.config?.url, 
-      error.response?.status, 
-      error.response?.data || error.message
-    );
+    // console.error('API 응답 오류:', 
+    //   error.config?.url, 
+    //   error.response?.status, 
+    //   error.response?.data || error.message
+    // );
     
     if (error.response?.status === 401) {
       // 이미 로그인 페이지로 리다이렉트 중인지 확인
