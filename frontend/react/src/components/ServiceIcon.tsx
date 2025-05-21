@@ -12,7 +12,7 @@ export default function ServiceIcon({ name, active, className = "h-8 w-8" }: { n
   const color = active ? "text-white" : "text-gray-500"
   
   // name 값 로깅
-  console.log("ServiceIcon received name:", name)
+  // console.log("ServiceIcon received name:", name)
 
   switch (name) {
     case "gitlab":
