@@ -111,7 +111,7 @@ interface CreateSessionResponse {
 // 공통으로 사용되는 상수 메시지
 const WELCOME_MESSAGE: Message = {
   id: "welcome",
-  content: "안녕하세요! 무엇을 도와드릴까요?",
+  content: "안녕하세요! 무엇을 도와드릴까요? \n 우측 상단의 ⚙️아이콘에서 MCP 설정을 하시면,\n 더욱 다양한 서비스를 사용하실 수 있습니다!",
   sender: "bot",
   timestamp: new Date()
 };
@@ -1092,7 +1092,7 @@ export default function ChatPage() {
       </div>
 
       {/* 채팅 영역 - 헤더와 입력창 높이를 고려한 패딩 추가 */}
-      <div className={`flex-1 overflow-y-auto p-4 mt-16 mb-24 z-10 relative transition-all duration-300 ${leftSidebarOpen ? 'ml-64' : 'ml-0'} ${sidebarOpen ? 'mr-64' : 'mr-0'}`}>
+      <div className={`absolute top-20 bottom-20 left-0 right-0 overflow-y-auto p-4 z-10 transition-all duration-300 ${leftSidebarOpen ? 'ml-64' : 'ml-0'} ${sidebarOpen ? 'mr-64' : 'mr-0'}`}>
         <div className="container mx-auto max-w-4xl">
           <div className="space-y-4">
             {messages.length > 0 ? (
@@ -1106,7 +1106,12 @@ export default function ChatPage() {
                     }`}
                   >
                     <div className="markdown-content">
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      <ReactMarkdown 
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                          p: ({node, ...props}) => <p className="whitespace-pre-line mb-2" {...props} />
+                        }}
+                      >
                         {message.content}
                       </ReactMarkdown>
                     </div>
