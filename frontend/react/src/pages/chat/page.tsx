@@ -1109,7 +1109,23 @@ export default function ChatPage() {
                       <ReactMarkdown 
                         remarkPlugins={[remarkGfm]}
                         components={{
-                          p: ({node, ...props}) => <p className="whitespace-pre-line mb-2" {...props} />
+                          p: ({node, ...props}) => <p className="whitespace-pre-line mb-2" {...props} />,
+                          h1: ({node, ...props}) => <h1 className="text-2xl font-bold mb-4 text-white" {...props} />,
+                          h2: ({node, ...props}) => <h2 className="text-xl font-bold mb-3 text-white" {...props} />,
+                          h3: ({node, ...props}) => <h3 className="text-lg font-bold mb-2 text-white" {...props} />,
+                          ul: ({node, ...props}) => <ul className="list-disc list-inside mb-2 text-gray-300" {...props} />,
+                          ol: ({node, ...props}) => <ol className="list-decimal list-inside mb-2 text-gray-300" {...props} />,
+                          li: ({node, ...props}) => <li className="mb-1" {...props} />,
+                          code: ({node, inline, className, children, ...props}) => 
+                            inline ? 
+                              <code className="bg-gray-800 rounded px-1 py-0.5 text-sm" {...props}>{children}</code> :
+                              <code className="block bg-gray-800 rounded p-2 my-2 text-sm overflow-x-auto" {...props}>{children}</code>,
+                          pre: ({node, ...props}) => <pre className="bg-gray-800 rounded p-2 my-2 overflow-x-auto" {...props} />,
+                          a: ({node, ...props}) => <a className="text-purple-400 hover:text-purple-300 underline" {...props} />,
+                          blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-gray-600 pl-4 my-2 text-gray-400" {...props} />,
+                          table: ({node, ...props}) => <table className="border-collapse w-full my-2" {...props} />,
+                          th: ({node, ...props}) => <th className="border border-gray-600 px-2 py-1 bg-gray-800" {...props} />,
+                          td: ({node, ...props}) => <td className="border border-gray-600 px-2 py-1" {...props} />,
                         }}
                       >
                         {message.content}
@@ -1213,10 +1229,10 @@ export default function ChatPage() {
                         ul: ({node, ...props}) => <ul className="list-disc list-inside mb-2 text-gray-300" {...props} />,
                         ol: ({node, ...props}) => <ol className="list-decimal list-inside mb-2 text-gray-300" {...props} />,
                         li: ({node, ...props}) => <li className="mb-1" {...props} />,
-                        code: ({node, inline, ...props}) => 
+                        code: ({node, inline, className, children, ...props}) => 
                           inline ? 
-                            <code className="bg-gray-800 rounded px-1 py-0.5 text-sm" {...props} /> :
-                            <code className="block bg-gray-800 rounded p-2 my-2 text-sm overflow-x-auto" {...props} />,
+                            <code className="bg-gray-800 rounded px-1 py-0.5 text-sm" {...props}>{children}</code> :
+                            <code className="block bg-gray-800 rounded p-2 my-2 text-sm overflow-x-auto" {...props}>{children}</code>,
                         pre: ({node, ...props}) => <pre className="bg-gray-800 rounded p-2 my-2 overflow-x-auto" {...props} />,
                         a: ({node, ...props}) => <a className="text-purple-400 hover:text-purple-300 underline" {...props} />,
                         blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-gray-600 pl-4 my-2 text-gray-400" {...props} />,
