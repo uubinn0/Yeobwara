@@ -20,11 +20,11 @@ export default function LandingPage() {
       <div className="z-10 text-center px-4 sm:px-6 lg:px-8">
         <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold text-white mb-6 tracking-tight">
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-blue-500 to-indigo-600">
-            우주 탐험을 시작하세요
+            나만의 우주선에 탑승하세요
           </span>
         </h1>
         <p className="text-xl sm:text-2xl text-gray-300 mb-10 max-w-2xl mx-auto">
-          MCP를 통한 무한한 가능성이 펼쳐지는 공간에서 당신만의 여정을 시작하세요
+          MCP를 통한 무한한 가능성이 <br/>당신만의 공간에서 시작됩니다
         </p>
         <Link to="/login">
           <Button
