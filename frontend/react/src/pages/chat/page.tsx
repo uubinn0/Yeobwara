@@ -266,14 +266,14 @@ export default function ChatPage() {
             }))
             
             setMessages(restoredMessages)
-            console.log(`채팅 내역 ${restoredMessages.length}개 로드 완료`)
+            // console.log(`채팅 내역 ${restoredMessages.length}개 로드 완료`)
             isLoaded = true;
             return true
           }
         }
         return false
       } catch (error) {
-        console.error("채팅 내역 로드 실패:", error)
+        // console.error("채팅 내역 로드 실패:", error)
         return false
       }
     }
@@ -307,9 +307,9 @@ export default function ChatPage() {
         
         // 다른 키를 사용하여 저장
         localStorage.setItem("chatHistory", JSON.stringify(messagesToStore))
-        console.log(`채팅 내역 ${messages.length}개 저장 완료`)
+        // console.log(`채팅 내역 ${messages.length}개 저장 완료`)
       } catch (error) {
-        console.error("채팅 내역 저장 실패:", error)
+        // console.error("채팅 내역 저장 실패:", error)
       }
     }, 300);  // 300ms 디바운스
     
@@ -336,15 +336,15 @@ export default function ChatPage() {
         
         if (savedSessionId) {
           // 저장된 세션 ID가 있으면 해당 세션 선택
-          console.log('저장된 세션 ID로 대화 내역 로드:', savedSessionId);
+          // console.log('저장된 세션 ID로 대화 내역 로드:', savedSessionId);
           selectChatHistory(savedSessionId);
         } else if (chatHistory.length > 0) {
           // 기존 세션이 있으면 가장 최근 세션 선택
           const latestSession = chatHistory[0]; // 첫 번째 세션이 가장 최근 세션이라고 가정
           if (latestSession && latestSession.session_id) {
-            console.log('선택된 최근 세션:', latestSession.session_id);
+            // console.log('선택된 최근 세션:', latestSession.session_id);
             selectChatHistory(latestSession.session_id);
-            console.log("기존 세션 로드됨:", latestSession.session_id);
+            // console.log("기존 세션 로드됨:", latestSession.session_id);
           } else {
             // 기본 환영 메시지 표시
             setWelcomeMessage();
@@ -354,7 +354,7 @@ export default function ChatPage() {
           setWelcomeMessage();
         }
       } catch (error) {
-        console.error("세션 초기화 중 오류 발생:", error);
+        // console.error("세션 초기화 중 오류 발생:", error);
         setWelcomeMessage();
       }
     };
@@ -374,21 +374,21 @@ export default function ChatPage() {
       // 선택한 세션 ID를 localStorage에 저장
       localStorage.setItem('selectedSessionId', session_id);
       
-      console.log(`대화내역 불러오기 시작: 세션 ID ${session_id}`);
+      // console.log(`대화내역 불러오기 시작: 세션 ID ${session_id}`);
       
       // 선택한 채팅 내역 로드 (URL 끝의 슬래시 제거 - API 요구사항에 맞춤)
       const response = await api.get<ChatHistoryResponse>(`/api/sessions/${session_id}/history`);
-      console.log('API 응답 받음:', response.data);
+      // console.log('API 응답 받음:', response.data);
       
       // 서버에서 history 배열이 있는 경우 (새로운 응답 형식)
       if (response.data && Array.isArray((response.data as any).history)) {
         const history = (response.data as any).history;
-        console.log('대화 내역 배열:', history);
+        // console.log('대화 내역 배열:', history);
         
         // history 배열을 메시지 목록으로 변환
         const newMessages = convertHistoryToMessages(history);
         
-        console.log('변환된 메시지 배열:', newMessages);
+        // console.log('변환된 메시지 배열:', newMessages);
         // 전체 대화 내역을 새로 설정
         setMessages(newMessages);
       }
@@ -402,15 +402,15 @@ export default function ChatPage() {
           timestamp: new Date(msg.timestamp)
         }));
         
-        console.log(`메시지 ${formattedMessages.length}개 변환 완료`);
+        // console.log(`메시지 ${formattedMessages.length}개 변환 완료`);
         setMessages(formattedMessages);
       } else {
-        console.log('메시지가 없거나 배열이 아님, 기본 메시지 표시');
+        // console.log('메시지가 없거나 배열이 아님, 기본 메시지 표시');
         setWelcomeMessage();
       }
     } catch (error: any) {
-      console.error(`채팅 내역 ${session_id} 로드 실패:`, error);
-      console.log('상세 오류 정보:', error.response?.status, error.response?.data);
+      // console.error(`채팅 내역 ${session_id} 로드 실패:`, error);
+      // console.log('상세 오류 정보:', error.response?.status, error.response?.data);
       setErrorMessage("채팅 내역을 불러오는 중 오류가 발생했습니다.");
     } finally {
       setIsLoading(false);
@@ -453,12 +453,12 @@ export default function ChatPage() {
             // 세션 생성 플래그 설정
             sessionStorage.setItem('chat_session_created', 'true');
             
-            console.log("새 세션 생성됨:", sessionId);
+            // console.log("새 세션 생성됨:", sessionId);
           } else {
             throw new Error("세션 생성 실패");
           }
         } catch (error) {
-          console.error("메시지 전송 중 세션 생성 실패:", error);
+          // console.error("메시지 전송 중 세션 생성 실패:", error);
           setIsLoading(false);
           setErrorMessage("대화방 생성에 실패했습니다. 다시 시도해주세요.");
           return;
@@ -467,7 +467,7 @@ export default function ChatPage() {
       
       // 실제 API 호출 - 새로운 엔드포인트 사용
       const response = await api.post(`/api/sessions/${sessionId}/chat`, { message: input })
-      console.log('채팅 응답:', response.data);
+      // console.log('채팅 응답:', response.data);
       
       // 서버에서 history 배열이 있는 경우 (새로운 응답 형식)
       if (response.data && Array.isArray((response.data as any).history)) {
@@ -491,7 +491,7 @@ export default function ChatPage() {
       }
       else {
         // 응답 형식이 예상과 다를 경우
-        console.error('예상하지 못한 응답 형식:', response.data);
+        // console.error('예상하지 못한 응답 형식:', response.data);
         const errorMessage: Message = {
           id: (Date.now() + 2).toString(),
           content: "서버 응답 형식이 올바르지 않습니다.",
@@ -541,7 +541,7 @@ export default function ChatPage() {
       localStorage.removeItem('chatHistory')
       navigate("/login")
     } catch (error) {
-      console.error("로그아웃 중 오류 발생:", error)
+      // console.error("로그아웃 중 오류 발생:", error)
       alert("로그아웃에 실패했습니다. 다시 시도해주세요.")
     }
   }
@@ -607,7 +607,7 @@ export default function ChatPage() {
         }))
         setServices(formatted)
       } catch (error) {
-        console.error("MCP 서비스 로드 실패:", error)
+        // console.error("MCP 서비스 로드 실패:", error)
       }
     }
     loadServices()
@@ -634,7 +634,7 @@ export default function ChatPage() {
         setGuideModalOpen(true);
       }
     } catch (error) {
-      console.error("서비스 정보 로드 실패:", error);
+      // console.error("서비스 정보 로드 실패:", error);
     }
   };
 
@@ -651,27 +651,27 @@ export default function ChatPage() {
     // 환영 메시지만 표시
     setWelcomeMessage();
     
-    console.log("임시 채팅방으로 전환됨");
+    // console.log("임시 채팅방으로 전환됨");
   };
 
   // 채팅 내역 불러오기 함수를 컴포넌트 내부에서 직접 호출할 수 있도록 정의
   const fetchChatHistory = async () => {
     try {
       // API 엔드포인트로 GET 요청
-      console.log('세션 목록 불러오기 시작');
+      // console.log('세션 목록 불러오기 시작');
       const response = await api.get<SessionResponse>("/api/sessions");
-      console.log('세션 목록 응답:', response.data);
+      // console.log('세션 목록 응답:', response.data);
       
       if (response.data && response.data.sessions) {
-        console.log(`세션 ${response.data.sessions.length}개 불러옴:`, response.data.sessions);
+        // console.log(`세션 ${response.data.sessions.length}개 불러옴:`, response.data.sessions);
         setChatHistory(response.data.sessions);
       } else {
-        console.log('세션이 없음');
+        // console.log('세션이 없음');
         setChatHistory([]);
       }
     } catch (error: any) {
-      console.error("채팅 내역 로드 실패:", error);
-      console.log('상세 오류 정보:', error.response?.status, error.response?.data);
+      // console.error("채팅 내역 로드 실패:", error);
+      // console.log('상세 오류 정보:', error.response?.status, error.response?.data);
       setChatHistory([]);
     }
   };
@@ -693,7 +693,7 @@ export default function ChatPage() {
       setEditingSessionId(null);
       setNewSessionName("");
     } catch (error) {
-      console.error("세션 이름 변경 실패:", error);
+      // console.error("세션 이름 변경 실패:", error);
       alert("세션 이름 변경에 실패했습니다.");
     }
   };
@@ -716,7 +716,7 @@ export default function ChatPage() {
         setWelcomeMessage();
       }
     } catch (error) {
-      console.error("세션 삭제 실패:", error);
+      // console.error("세션 삭제 실패:", error);
       alert("세션 삭제에 실패했습니다.");
     }
   };

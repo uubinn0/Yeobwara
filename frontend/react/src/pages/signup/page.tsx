@@ -28,7 +28,7 @@ export default function SignupPage() {
       })
       navigate("/login")
     } catch (error: any) {
-      console.error('Signup failed:', error)
+      // console.error('Signup failed:', error)
       if (error.response) {
         const errorDetail = error.response.data?.detail;
         if (errorDetail) {

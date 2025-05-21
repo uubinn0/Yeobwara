@@ -77,7 +77,7 @@ export default function McpSetupPage() {
         
         setServices(formattedServices)
       } catch (err) {
-        console.error("MCP 서비스 목록 가져오기 실패:", err)
+        // console.error("MCP 서비스 목록 가져오기 실패:", err)
         setError("서비스 목록을 불러오는 중 오류가 발생했습니다.")
         setServices([]) // 에러 시 빈 배열로 설정
       } finally {
@@ -89,7 +89,7 @@ export default function McpSetupPage() {
   }, [])
 
   const openServiceDialog = async (service: McpService) => {
-    console.log("openServiceDialog 호출:", service.name);
+    // console.log("openServiceDialog 호출:", service.name);
     
     // 먼저 모달을 표시하고 로딩 상태 표시
     setSelectedService(service);
@@ -99,14 +99,14 @@ export default function McpSetupPage() {
     try {
       // 모달 열기 전에 해당 서비스의 최신 환경변수만 조회
       const serverEnvVars = await fetchEnvironmentVariablesByService(service.id);
-      console.log(`${service.name} 서비스의 환경변수 조회 완료:`, serverEnvVars);
+      // console.log(`${service.name} 서비스의 환경변수 조회 완료:`, serverEnvVars);
       
       // 서버에서 받은 환경변수로 서비스 정보 업데이트
       const updatedService = {
         ...service,
         required_env_vars: service.required_env_vars.map((env: { key: string; value: string }) => {
           const serverValue = serverEnvVars[env.key];
-          console.log(`환경변수 ${env.key}:`, serverValue || "값 없음");
+          // console.log(`환경변수 ${env.key}:`, serverValue || "값 없음");
           return {
             key: env.key,
             value: serverValue || env.value // 서버 값이 있으면 사용, 없으면 기존 값 유지
@@ -116,7 +116,7 @@ export default function McpSetupPage() {
       
       setSelectedService(updatedService);
     } catch (error) {
-      console.error(`${service.name} 서비스 환경변수 불러오기 실패:`, error);
+      // console.error(`${service.name} 서비스 환경변수 불러오기 실패:`, error);
       // 오류 발생 시 알림
       alert("환경변수를 불러오는데 실패했습니다. 다시 시도해주세요.");
     } finally {
@@ -131,7 +131,7 @@ export default function McpSetupPage() {
       e.stopPropagation();
     }
     
-    console.log("handleToggleSelection 호출:", service.name);
+    // console.log("handleToggleSelection 호출:", service.name);
     
     // 환경변수가 없는 경우 항상 선택 가능
     const hasNoEnvVars = service.required_env_vars.length === 0;
@@ -159,7 +159,7 @@ export default function McpSetupPage() {
         }));
         localStorage.setItem("mcpServices", JSON.stringify(simplifiedServices));
       } catch (err) {
-        console.error("MCP 선택 상태 변경 실패:", err);
+        // console.error("MCP 선택 상태 변경 실패:", err);
         alert("서비스 선택 상태 변경에 실패했습니다.");
       }
       return;
@@ -168,7 +168,7 @@ export default function McpSetupPage() {
     // 환경변수가 필요한 경우, 서버에서 최신 환경변수 조회
     try {
       // 서비스 선택 전에 최신 환경변수 다시 조회
-      console.log("환경변수 다시 조회 중...");
+      // console.log("환경변수 다시 조회 중...");
       const serverEnvVars = await fetchEnvironmentVariablesByService(service.id);
       
       // 조회된 환경변수로 서비스 정보 업데이트
@@ -208,7 +208,7 @@ export default function McpSetupPage() {
           }));
           localStorage.setItem("mcpServices", JSON.stringify(simplifiedServices));
         } catch (err) {
-          console.error("MCP 선택 상태 변경 실패:", err);
+          // console.error("MCP 선택 상태 변경 실패:", err);
           alert("서비스 선택 상태 변경에 실패했습니다.");
         }
       } else {
@@ -225,7 +225,7 @@ export default function McpSetupPage() {
         setIsDialogOpen(true);
       }
     } catch (error) {
-      console.error(`${service.name} 서비스 환경변수 불러오기 실패:`, error);
+      // console.error(`${service.name} 서비스 환경변수 불러오기 실패:`, error);
       alert("환경변수를 불러오는데 실패했습니다. 다시 시도해주세요.");
     }
   };
@@ -250,7 +250,7 @@ export default function McpSetupPage() {
         await toggleMcpSelection(updatedService.id, true);
         updatedService.is_selected = false;
       } catch (err) {
-        console.error("서비스 선택 상태 해제 실패:", err);
+        // console.error("서비스 선택 상태 해제 실패:", err);
       }
     }
     
@@ -276,7 +276,7 @@ export default function McpSetupPage() {
       
       alert(`${updatedService.name} 서비스 설정이 저장되었습니다.`);
     } catch (err) {
-      console.error("환경변수 설정 저장 실패:", err);
+      // console.error("환경변수 설정 저장 실패:", err);
       
       // API 저장 실패해도 UI에는 반영
       setServices(updatedServices);
@@ -315,7 +315,7 @@ export default function McpSetupPage() {
       const selectedServices = services.filter(service => service.is_selected);
       
       // 선택된 서비스가 없어도 진행 가능 (0개 선택 가능하도록 수정)
-      console.log(`선택된 서비스 수: ${selectedServices.length}개`);
+      // console.log(`선택된 서비스 수: ${selectedServices.length}개`);
       
       // 선택된 서비스의 최신 환경변수 상태를 서버에서 다시 조회
       let updatedServices = [...services];
@@ -328,7 +328,7 @@ export default function McpSetupPage() {
         if (service.required_env_vars.length === 0) continue;
         
         try {
-          console.log(`${service.name} 서비스의 환경변수 다시 조회 중...`);
+          // console.log(`${service.name} 서비스의 환경변수 다시 조회 중...`);
           const serverEnvVars = await fetchEnvironmentVariablesByService(service.id);
           
           // 환경변수 업데이트
@@ -361,7 +361,7 @@ export default function McpSetupPage() {
             } : s
           );
         } catch (error) {
-          console.error(`${service.name} 서비스 환경변수 조회 실패:`, error);
+          // console.error(`${service.name} 서비스 환경변수 조회 실패:`, error);
           // 오류가 발생한 경우도 불완전한 것으로 처리
           hasIncompleteEnvVars = true;
           incompleteServiceNames.push(`${service.name} (조회 실패)`);
@@ -392,7 +392,7 @@ export default function McpSetupPage() {
       // 채팅 페이지로 이동
       navigate("/chat");
     } catch (err) {
-      console.error("POD 생성 실패:", err);
+      // console.error("POD 생성 실패:", err);
       
       // 오류 메시지 표시
       alert("POD 생성에 실패했습니다. 다시 시도해주세요.");
@@ -446,7 +446,7 @@ export default function McpSetupPage() {
                   <div
                     key={service.id}
                     onClick={() => {
-                      console.log("서비스 카드 클릭:", service.name);
+                      // console.log("서비스 카드 클릭:", service.name);
                       openServiceDialog(service);
                     }}
                     className={`
@@ -465,7 +465,7 @@ export default function McpSetupPage() {
                       onClick={(e) => {
                         // 이벤트 전파 중지 - 부모의 onClick이 실행되지 않도록 함
                         e.stopPropagation();
-                        console.log("토글 스위치 클릭");
+                        // console.log("토글 스위치 클릭");
                         handleToggleSelection(e, service);
                       }}
                     >
