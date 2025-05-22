@@ -109,7 +109,7 @@ MCP_SERVER_CONFIG = {
     },
     "poke-mcp":{
         "type":"stdio",
-        "params":{"command":"node","args":["/srv/poke-mcp/dist/index.js"],"env":{}}
+        "params":{"command":"node","args":["/srv/poke-mcp/src/index.ts"],"env":{}}
     }
 
 
