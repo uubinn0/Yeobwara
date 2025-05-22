@@ -43,6 +43,7 @@ RUN git clone https://github.com/NaveenBandarage/poke-mcp.git /srv/poke-mcp
 WORKDIR /srv/poke-mcp
 RUN npm install
 RUN npm install -D ts-node typescript
+RUN npm install -g ts-node typescript
 RUN npm run build
 
 
