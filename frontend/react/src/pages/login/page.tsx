@@ -8,6 +8,7 @@ import { Link, useNavigate } from "react-router-dom"
 import { Rocket, Loader2 } from "lucide-react"
 import api from "../../api/api"
 import axios from 'axios'
+import { showToast } from '../../utils/toast'
 
 interface LoginResponse {
   access_token: string;
@@ -37,16 +38,15 @@ export default function LoginPage() {
         }
       );
       
-      if (response.data && response.data.access_token) {
-        localStorage.setItem('access_token', response.data.access_token)
-        navigate("/chat")
+      if (response.data.access_token) {
+        localStorage.setItem("access_token", response.data.access_token);
+        navigate("/chat");
       } else {
-        alert("로그인에 실패했습니다. 토큰 발급에 실패했습니다.")
-        setIsLoading(false)
+        showToast.error("로그인에 실패했습니다. \n토큰 발급에 실패했습니다.");
       }
     } catch (error) {
-      // console.error('Login failed:', error)
-      alert("로그인에 실패했습니다. 아이디와 비밀번호를 확인해주세요.")
+      showToast.error("로그인에 실패했습니다. \n아이디와 비밀번호를 확인해주세요.");
+    } finally {
       setIsLoading(false)
     }
   }
