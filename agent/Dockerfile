@@ -42,7 +42,9 @@ RUN npm run build
 RUN git clone https://github.com/NaveenBandarage/poke-mcp.git /srv/poke-mcp
 WORKDIR /srv/poke-mcp
 RUN npm install
+RUN npm install -D ts-node typescript
 RUN npm run build
+
 
 # Python 패키지 설치
 WORKDIR /app
