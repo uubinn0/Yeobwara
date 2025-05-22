@@ -39,7 +39,7 @@ RUN npm install
 RUN npm run build
 
 # poke mcp
-RUN git clone https://github.com/yourusername/poke-mcp.git /srv/poke-mcp
+RUN git clone https://github.com/NaveenBandarage/poke-mcp.git /srv/poke-mcp
 WORKDIR /srv/poke-mcp
 RUN npm install
 RUN npm run build
