@@ -109,11 +109,13 @@ MCP_SERVER_CONFIG = {
     },
     "poke-mcp": {
         "type": "stdio",
-        "params": {"command": "npx",
+        "params": {
+            "command": "npx",
             "args": ["ts-node", "/srv/poke-mcp/src/index.ts"],
             "env": {}
         }
-    },
+    }
+
 
 
 
