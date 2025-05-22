@@ -16,6 +16,7 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import logo from "@/assets/logo4.svg"
+import { showToast } from '../../utils/toast'
 
 // 로딩 애니메이션용 CSS 스타일 추가
 const loadingDotsStyle = {
@@ -541,8 +542,7 @@ export default function ChatPage() {
       localStorage.removeItem('chatHistory')
       navigate("/login")
     } catch (error) {
-      // console.error("로그아웃 중 오류 발생:", error)
-      alert("로그아웃에 실패했습니다. 다시 시도해주세요.")
+      showToast.error("로그아웃에 실패했습니다. \n다시 시도해주세요.")
     }
   }
 
@@ -693,8 +693,7 @@ export default function ChatPage() {
       setEditingSessionId(null);
       setNewSessionName("");
     } catch (error) {
-      // console.error("세션 이름 변경 실패:", error);
-      alert("세션 이름 변경에 실패했습니다.");
+      showToast.error("세션 이름 변경에 실패했습니다.");
     }
   };
 
@@ -716,8 +715,7 @@ export default function ChatPage() {
         setWelcomeMessage();
       }
     } catch (error) {
-      // console.error("세션 삭제 실패:", error);
-      alert("세션 삭제에 실패했습니다.");
+      showToast.error("세션 삭제에 실패했습니다.");
     }
   };
 
