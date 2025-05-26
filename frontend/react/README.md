@@ -1,8 +1,8 @@
-# 🚀 Project “그랬구나"
+# 🚀 Project “여봐라"
 
 ## 📌 프로젝트 개요
 
-본 서비스 "**여봐라**"는 신기술인 MCP의 사용 설정의 어려움을 파악하고 이를 해결하여 일반 사용자도 사용할 수 있도록 허들을 낮추고 다양한 기능을 한 페이지에서 해결 할 수 있는 편의성 제공을 제공하는  **종합 MCP 플랫폼**입니다.
+본 서비스 "**여봐라**"는 신기술인 MCP의 환경 설정의 어려움을 파악하고 이를 해결하여 일반 사용자도 사용할 수 있도록 허들을 낮추고 다양한 기능을 한 페이지에서 해결 할 수 있는 편의성 제공을 제공하는  **MCP 종합 서비스**입니다.
 ---
 
 ## 🛠 기술 스택
@@ -24,18 +24,19 @@
 ```
 📦 프로젝트 루트
 ├── 📂 src
+│   ├── 📂 api            # 🔗 백엔드 API 요청 관련 함수
 │   ├── 📂 assets         # 🎨 정적 파일 (이미지, 폰트 등)
 │   ├── 📂 components     # 🧩 재사용 가능한 UI 컴포넌트
+│   ├── 📂 lib            # 🔨 utils
 │   ├── 📂 pages          # 📄 주요 페이지 컴포넌트
-│   ├── 📂 store          # 📂 Redux 상태 관리 관련 파일
-│   ├── 📂 hooks          # 🔗 커스텀 훅
-│   ├── 📂 utils          # 🛠 유틸리티 함수 모음
-│   ├── 📂 styles         # 🎨 Tailwind 관련 스타일 파일
-│   ├── 📂 api            # 🔗 백엔드 API 요청 관련 함수
+│   ├── 📂 public         # 📂 favicon
 │   ├── 📂 router         # 🚦 React Router 관련 파일
+│   ├── 📂 styles         # 🎨 Tailwind 관련 스타일 파일
+│   ├── 📂 types          # 🪧 응답 타입 정의
+│   ├── 📂 utils          # 🛠 유틸리티 함수 모음
 │   ├── 📜 main.tsx       # 🚀 애플리케이션 진입점
 │   ├── 📜 App.tsx        # 🏠 루트 컴포넌트
-├── 📜 index.html         # 📝 기본 HTML 파일
+│   ├── 📜 index.css      # 📝 기본 css 파일
 ├── 📜 package.json       # 📆 패키지 정보 및 스크립트
 ├── 📜 tsconfig.json      # ⚙ TypeScript 설정 파일
 ├── 📜 vite.config.ts     # ⚡ Vite 설정 파일
@@ -50,7 +51,7 @@
 ### 1️⃣ 프로젝트 클론
 ```sh
 # git clone ""
-# cd FE
+# cd frontend/react
 # Git Lab 오픈 후 작성 될 예정
 ```
 
@@ -79,21 +80,34 @@ npm run dev
 typescript 타입 체크를 활성화하려면 `eslint.config.js` 파일을 아래와 같이 설정합니다:
 
 ```js
-import react from 'eslint-plugin-react';
-export default tseslint.config({
-  languageOptions: {
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
+import js from '@eslint/js'
+import globals from 'globals'
+import reactHooks from 'eslint-plugin-react-hooks'
+import reactRefresh from 'eslint-plugin-react-refresh'
+import tseslint from 'typescript-eslint'
+
+export default tseslint.config(
+  { ignores: ['dist'] },
+  {
+    extends: [js.configs.recommended, ...tseslint.configs.recommended],
+    files: ['**/*.{ts,tsx}'],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: globals.browser,
+    },
+    plugins: {
+      'react-hooks': reactHooks,
+      'react-refresh': reactRefresh,
+    },
+    rules: {
+      ...reactHooks.configs.recommended.rules,
+      'react-refresh/only-export-components': [
+        'warn',
+        { allowConstantExport: true },
+      ],
     },
   },
-  settings: { react: { version: '18.3' } },
-  plugins: { react },
-  rules: {
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-});
+)
 ```
 
 ---
@@ -108,16 +122,6 @@ export default tseslint.config({
 ```sh
 npx shadcn@latest add button
 ```
-
----
-
-## ✅ TODO
-- [ ] 🎤 소켓 소통 기능 구현
-- [ ] 🔗 백엔드 API 연동
-- [ ] 🎨 UI 디자인 및 스타일링
-- [ ] 🧪 프로토타입 목업 고정
-- [ ] 🧩 프로토타입 페이지 분리
-- [ ] 🆕 프로토타입 페이지 생성
 
 ---
 
