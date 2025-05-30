@@ -107,6 +107,16 @@ MCP_SERVER_CONFIG = {
             "args": ["run", "--directory", "/srv/dart-mcp", "dart.py"],
             "env": {"DART_API_KEY": os.getenv("DART_API_KEY", "")}}
     },
+    "poke-mcp": {
+        "type": "stdio",
+        "params": {
+            "command": "npx",
+            "args": ["ts-node", "/srv/poke-mcp/src/index.ts"],
+            "env": {}
+        }
+    }
+
+
 
 
 }

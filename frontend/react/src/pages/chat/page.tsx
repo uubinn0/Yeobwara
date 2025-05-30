@@ -16,6 +16,7 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import logo from "@/assets/logo4.svg"
+import { showToast } from '../../utils/toast'
 
 // 로딩 애니메이션용 CSS 스타일 추가
 const loadingDotsStyle = {
@@ -111,7 +112,7 @@ interface CreateSessionResponse {
 // 공통으로 사용되는 상수 메시지
 const WELCOME_MESSAGE: Message = {
   id: "welcome",
-  content: "안녕하세요! 무엇을 도와드릴까요?",
+  content: "안녕하세요! 무엇을 도와드릴까요? \n 우측 상단의 ⚙️아이콘에서 MCP 설정을 하시면,\n 더욱 다양한 서비스를 사용하실 수 있습니다!",
   sender: "bot",
   timestamp: new Date()
 };
@@ -541,8 +542,7 @@ export default function ChatPage() {
       localStorage.removeItem('chatHistory')
       navigate("/login")
     } catch (error) {
-      // console.error("로그아웃 중 오류 발생:", error)
-      alert("로그아웃에 실패했습니다. 다시 시도해주세요.")
+      showToast.error("로그아웃에 실패했습니다. \n다시 시도해주세요.")
     }
   }
 
@@ -693,8 +693,7 @@ export default function ChatPage() {
       setEditingSessionId(null);
       setNewSessionName("");
     } catch (error) {
-      // console.error("세션 이름 변경 실패:", error);
-      alert("세션 이름 변경에 실패했습니다.");
+      showToast.error("세션 이름 변경에 실패했습니다.");
     }
   };
 
@@ -716,8 +715,7 @@ export default function ChatPage() {
         setWelcomeMessage();
       }
     } catch (error) {
-      // console.error("세션 삭제 실패:", error);
-      alert("세션 삭제에 실패했습니다.");
+      showToast.error("세션 삭제에 실패했습니다.");
     }
   };
 
@@ -1092,7 +1090,7 @@ export default function ChatPage() {
       </div>
 
       {/* 채팅 영역 - 헤더와 입력창 높이를 고려한 패딩 추가 */}
-      <div className={`flex-1 overflow-y-auto p-4 mt-16 mb-24 z-10 relative transition-all duration-300 ${leftSidebarOpen ? 'ml-64' : 'ml-0'} ${sidebarOpen ? 'mr-64' : 'mr-0'}`}>
+      <div className={`absolute top-20 bottom-20 left-0 right-0 overflow-y-auto p-4 z-10 transition-all duration-300 ${leftSidebarOpen ? 'ml-64' : 'ml-0'} ${sidebarOpen ? 'mr-64' : 'mr-0'}`}>
         <div className="container mx-auto max-w-4xl">
           <div className="space-y-4">
             {messages.length > 0 ? (
@@ -1106,7 +1104,28 @@ export default function ChatPage() {
                     }`}
                   >
                     <div className="markdown-content">
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      <ReactMarkdown 
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                          p: ({node, ...props}) => <p className="whitespace-pre-line mb-2" {...props} />,
+                          h1: ({node, ...props}) => <h1 className="text-2xl font-bold mb-4 text-white" {...props} />,
+                          h2: ({node, ...props}) => <h2 className="text-xl font-bold mb-3 text-white" {...props} />,
+                          h3: ({node, ...props}) => <h3 className="text-lg font-bold mb-2 text-white" {...props} />,
+                          ul: ({node, ...props}) => <ul className="list-disc list-inside mb-2 text-gray-300" {...props} />,
+                          ol: ({node, ...props}) => <ol className="list-decimal list-inside mb-2 text-gray-300" {...props} />,
+                          li: ({node, ...props}) => <li className="mb-1" {...props} />,
+                          code: ({node, inline, className, children, ...props}) => 
+                            inline ? 
+                              <code className="bg-gray-800 rounded px-1 py-0.5 text-sm" {...props}>{children}</code> :
+                              <code className="block bg-gray-800 rounded p-2 my-2 text-sm overflow-x-auto" {...props}>{children}</code>,
+                          pre: ({node, ...props}) => <pre className="bg-gray-800 rounded p-2 my-2 overflow-x-auto" {...props} />,
+                          a: ({node, ...props}) => <a className="text-purple-400 hover:text-purple-300 underline" {...props} />,
+                          blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-gray-600 pl-4 my-2 text-gray-400" {...props} />,
+                          table: ({node, ...props}) => <table className="border-collapse w-full my-2" {...props} />,
+                          th: ({node, ...props}) => <th className="border border-gray-600 px-2 py-1 bg-gray-800" {...props} />,
+                          td: ({node, ...props}) => <td className="border border-gray-600 px-2 py-1" {...props} />,
+                        }}
+                      >
                         {message.content}
                       </ReactMarkdown>
                     </div>
@@ -1208,10 +1227,10 @@ export default function ChatPage() {
                         ul: ({node, ...props}) => <ul className="list-disc list-inside mb-2 text-gray-300" {...props} />,
                         ol: ({node, ...props}) => <ol className="list-decimal list-inside mb-2 text-gray-300" {...props} />,
                         li: ({node, ...props}) => <li className="mb-1" {...props} />,
-                        code: ({node, inline, ...props}) => 
+                        code: ({node, inline, className, children, ...props}) => 
                           inline ? 
-                            <code className="bg-gray-800 rounded px-1 py-0.5 text-sm" {...props} /> :
-                            <code className="block bg-gray-800 rounded p-2 my-2 text-sm overflow-x-auto" {...props} />,
+                            <code className="bg-gray-800 rounded px-1 py-0.5 text-sm" {...props}>{children}</code> :
+                            <code className="block bg-gray-800 rounded p-2 my-2 text-sm overflow-x-auto" {...props}>{children}</code>,
                         pre: ({node, ...props}) => <pre className="bg-gray-800 rounded p-2 my-2 overflow-x-auto" {...props} />,
                         a: ({node, ...props}) => <a className="text-purple-400 hover:text-purple-300 underline" {...props} />,
                         blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-gray-600 pl-4 my-2 text-gray-400" {...props} />,
