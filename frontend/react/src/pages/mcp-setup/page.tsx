@@ -22,6 +22,7 @@ import "@/styles/globals.css"
 import ServiceIcon from "@/components/ServiceIcon"
 import { fetchMcpServices, saveMcpServiceSettings, toggleMcpSelection, createPod, fetchEnvironmentVariablesByService } from "@/api/mcpService"
 import { McpService, McpServiceResponse } from "@/types/mcp"
+import { showToast } from '../../utils/toast'
 
 export default function McpSetupPage() {
   const navigate = useNavigate()
@@ -118,7 +119,7 @@ export default function McpSetupPage() {
     } catch (error) {
       // console.error(`${service.name} 서비스 환경변수 불러오기 실패:`, error);
       // 오류 발생 시 알림
-      alert("환경변수를 불러오는데 실패했습니다. 다시 시도해주세요.");
+      showToast.error("환경변수를 불러오는데 실패했습니다. \n다시 시도해주세요.");
     } finally {
       setDialogLoading(false);
     }
@@ -160,7 +161,7 @@ export default function McpSetupPage() {
         localStorage.setItem("mcpServices", JSON.stringify(simplifiedServices));
       } catch (err) {
         // console.error("MCP 선택 상태 변경 실패:", err);
-        alert("서비스 선택 상태 변경에 실패했습니다.");
+        showToast.error("서비스 선택 상태 변경에 실패했습니다.");
       }
       return;
     }
@@ -209,11 +210,11 @@ export default function McpSetupPage() {
           localStorage.setItem("mcpServices", JSON.stringify(simplifiedServices));
         } catch (err) {
           // console.error("MCP 선택 상태 변경 실패:", err);
-          alert("서비스 선택 상태 변경에 실패했습니다.");
+          showToast.error("서비스 선택 상태 변경에 실패했습니다.");
         }
       } else {
         // 환경변수가 없거나 불완전한 경우 모달 열기
-        alert("서비스를 선택하기 전에 모든 환경변수를 입력해주세요.");
+        showToast.error("서비스를 선택하기 전에 모든 환경변수를 입력해주세요.");
         
         // 최신 환경변수로 업데이트된 서비스 정보로 모달 열기
         const serviceWithUpdatedEnvVars = {
@@ -226,7 +227,7 @@ export default function McpSetupPage() {
       }
     } catch (error) {
       // console.error(`${service.name} 서비스 환경변수 불러오기 실패:`, error);
-      alert("환경변수를 불러오는데 실패했습니다. 다시 시도해주세요.");
+      showToast.error("환경변수를 불러오는데 실패했습니다. \n다시 시도해주세요.");
     }
   };
 
@@ -274,7 +275,7 @@ export default function McpSetupPage() {
       // 상태 업데이트
       setServices(updatedServices);
       
-      alert(`${updatedService.name} 서비스 설정이 저장되었습니다.`);
+      showToast.success(`${updatedService.name} 서비스 설정이 저장되었습니다.`);
     } catch (err) {
       // console.error("환경변수 설정 저장 실패:", err);
       
@@ -288,7 +289,7 @@ export default function McpSetupPage() {
       }));
       localStorage.setItem("mcpServices", JSON.stringify(simplifiedServices));
       
-      alert(`서버 저장에 실패했지만 설정은 적용되었습니다.`);
+      showToast.error(`서버 저장에 실패했지만 설정은 적용되었습니다.`);
     } finally {
       setLoading(false);
       setIsDialogOpen(false);
@@ -374,7 +375,7 @@ export default function McpSetupPage() {
       // 환경변수가 불완전한 서비스가 있는 경우
       if (hasIncompleteEnvVars) {
         const serviceNames = incompleteServiceNames.join(", ");
-        alert(`다음 서비스의 모든 환경변수를 입력해주세요: ${serviceNames}`);
+        showToast.error(`다음 서비스의 모든 환경변수를 입력해주세요: ${serviceNames}`);
         setPodLoading(false);
         return;
       }
@@ -395,7 +396,7 @@ export default function McpSetupPage() {
       // console.error("POD 생성 실패:", err);
       
       // 오류 메시지 표시
-      alert("POD 생성에 실패했습니다. 다시 시도해주세요.");
+      showToast.error("POD 생성에 실패했습니다. \n다시 시도해주세요.");
     } finally {
       setPodLoading(false); // Pod 생성 로딩 상태 종료
     }
@@ -408,6 +409,43 @@ export default function McpSetupPage() {
         <div className="stars"></div>
         <div className="twinkling"></div>
       </div>
+
+      {/* 스크롤바 스타일 */}
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          /* 스크롤바 스타일 */
+          ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+          }
+          
+          ::-webkit-scrollbar-track {
+            background: rgba(31, 31, 35, 0.5);
+            border-radius: 10px;
+          }
+          
+          ::-webkit-scrollbar-thumb {
+            background: linear-gradient(to bottom, rgba(139, 92, 246, 0.6), rgba(124, 58, 237, 0.7));
+            border-radius: 10px;
+            border: 2px solid rgba(31, 31, 35, 0.1);
+          }
+          
+          ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(to bottom, rgba(139, 92, 246, 0.8), rgba(124, 58, 237, 0.9));
+          }
+
+          /* Firefox에 대한 스크롤바 */
+          * {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(139, 92, 246, 0.6) rgba(31, 31, 35, 0.5);
+          }
+          
+          /* 스크롤 가능한 요소에 오른쪽 패딩 추가 */
+          .overflow-y-auto, .overflow-x-auto {
+            padding-right: 8px;
+          }
+        `
+      }} />
 
       {/* 채팅으로 돌아가기 버튼 */}
       <Button 

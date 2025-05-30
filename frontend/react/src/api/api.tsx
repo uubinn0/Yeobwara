@@ -1,5 +1,6 @@
 import axios from 'axios';
 import type { AxiosRequestConfig } from 'axios';
+import { showToast } from '../utils/toast';
 
 // const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
 // const baseURL = import.meta.env.VITE_API_BASE || "https://k12b107.p.ssafy.io";
@@ -44,7 +45,7 @@ api.interceptors.response.use(
       // 이미 로그인 페이지로 리다이렉트 중인지 확인
       if (window.location.pathname !== '/login') {
         localStorage.clear(); // 모든 로컬 스토리지 데이터 삭제
-        alert('로그인이 만료되었습니다. 다시 로그인해주세요.');
+        showToast.error('로그인이 만료되었습니다. \n다시 로그인해주세요.');
         window.location.href = '/login';
       }
     }
